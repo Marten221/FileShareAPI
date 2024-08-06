@@ -22,8 +22,10 @@ public class FileController {
 
     @PostMapping("/file")
     public ResponseEntity<FileDto> createFile(@RequestParam("userId") String id,
-                                              @RequestParam("file") MultipartFile file) throws IOException {
-        return ResponseEntity.ok().body(fileService.createFile(id, file));
+                                              @RequestParam("file") MultipartFile file,
+                                              @RequestParam(value = "customFilename", required = false) String customFilename) //Give the file a custom name. This is the name displayed on site
+            throws IOException {
+        return ResponseEntity.ok().body(fileService.createFile(id, file, customFilename));
     }
 
     @GetMapping(value = "/file/{fileName}", produces = MediaType.ALL_VALUE)

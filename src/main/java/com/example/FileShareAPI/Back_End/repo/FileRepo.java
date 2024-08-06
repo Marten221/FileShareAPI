@@ -11,6 +11,6 @@ import java.util.List;
 @Repository
 public interface FileRepo extends JpaRepository<File, String> {
     //https://github.com/hendisantika/Spring-Boot-Search-Example-using-Thymeleaf-and-Spring-Data-JPA/tree/main
-    @Query(value = "SELECT * FROM files f WHERE f.file_id LIKE %:keyword%", nativeQuery = true)//Actually this query is written correctly
+    @Query(value = "SELECT * FROM files f WHERE LOWER(f.file_name) LIKE LOWER(CONCAT('%', :keyword, '%'))", nativeQuery = true)//TODO: implement checking the id as well.
     List<File> findByKeyword(@Param("keyword") String keyword);
 }

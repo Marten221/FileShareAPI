@@ -27,22 +27,29 @@ public class FileService {
     private final FileRepo fileRepo;
     private final UserRepo userRepo;
 
-    public FileDto createFile(String id, MultipartFile file) throws IOException {
+    public FileDto createFile(String id, MultipartFile file, String customFilename) throws IOException {
         User fileOwner = userRepo.getReferenceById(id);
-        String fileName = file.getOriginalFilename();
-        assert fileName != null; //TODO: remove for production
-        String extension = fileName.substring(fileName.lastIndexOf(".") + 1);
+        String originalFilename = file.getOriginalFilename();
+        assert originalFilename != null; //TODO: remove for production
+        String extension = originalFilename.substring(originalFilename.lastIndexOf(".") + 1);
 
-        File fileObject = new File(); // Creating the file and setting its values
-        System.out.println(fileObject.getFileId());
-        fileObject.setUser(fileOwner);
-        fileObject.setFileExtension(extension);
+        File fileObject = createFileObject(fileOwner, extension, originalFilename, customFilename);// Creating the file and setting its values
 
         fileRepo.save(fileObject); // saving the file to the database and file system
         String newFileName = fileObject.getFileId() + "." + extension;
         saveFile(newFileName, file, id);
 
         return fileToDto(fileObject);
+    }
+
+    private static File createFileObject(User fileOwner, String extension, String originalFilename, String customFileName) {
+        File fileObject = new File();
+        fileObject.setUser(fileOwner);
+        fileObject.setFileExtension(extension);
+        fileObject.setFileName(originalFilename); //TODO: remove file ext from the original filename
+        fileObject.setFileName(customFileName == null ? originalFilename : customFileName); // If no custom name is given, use the original file Name
+
+        return fileObject;
     }
 
     private void saveFile(String fileName, MultipartFile file, String userId) throws IOException {
@@ -57,9 +64,9 @@ public class FileService {
     }
 
     private FileDto fileToDto(File fileObject) {
-        String fileName = fileObject.getFileId() + "." + fileObject.getFileExtension();
+        //String fileIdExt = fileObject.getFileId(); // + "." + fileObject.getFileExtension(); When requesting the file, it finds and adds the extension by itself
 
-        return new FileDto(fileName, fileObject.getUser().getUserId());
+        return new FileDto(fileObject.getFileId(), fileObject.getUser().getUserId(), fileObject.getFileName());
     }
 
     public byte[] getFileContent(String fileName) throws IOException {
