@@ -1,8 +1,7 @@
 package com.example.FileShareAPI.Back_End.dto;
 
-public record FileDto(
+public record FileDescriptionDto (
         String fileId,
         String userId,
-        String fileName
-) {
-}
+        String fileName)
+{ }
