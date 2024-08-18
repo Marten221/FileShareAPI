@@ -1,5 +1,6 @@
 package com.example.FileShareAPI.Back_End.controller;
 
+import com.example.FileShareAPI.Back_End.dto.FileDescriptionDto;
 import com.example.FileShareAPI.Back_End.dto.FilePreviewDto;
 import com.example.FileShareAPI.Back_End.service.FileService;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Set;
 
 @RestController
 @RequiredArgsConstructor
@@ -38,15 +40,22 @@ public class FileController {
     }
 
     @GetMapping("/findfile/{keyword}") //TODO: pagination
-    public Page<FilePreviewDto> getByKeyword(@PathVariable("keyword") String keyword,
+    public Page<FilePreviewDto> getByKeyword(@PathVariable(value = "keyword", required = false) String keyword,
+                                             @RequestParam(value = "sorting", defaultValue = "date_ascending") String sorting,
+                                             @RequestParam(value = "extension") String extension,
                                              @RequestParam(value = "page", defaultValue = "0") int page,
                                              @RequestParam(value = "size", defaultValue = "15") int size) {
-        return fileService.getFilesByKeyword(keyword, page, size);
+        return fileService.getFilesByKeyword(keyword, sorting, extension, page, size);
     }
 
     @GetMapping("/filedescription/{fileId}")
-    public ResponseEntity<FilePreviewDto> getFileDescription(@PathVariable("fileId") String fileId) { //FileDescriptionDto instead of FileDto
+    public ResponseEntity<FileDescriptionDto> getFileDescription(@PathVariable("fileId") String fileId) { //FileDescriptionDto instead of FileDto
         return ResponseEntity.ok().body(fileService.getFileDescription(fileId));
+    }
+
+    @GetMapping("/extensions")
+    public ResponseEntity<Set<String>> getFileExtensions() {
+        return ResponseEntity.ok().body(fileService.getFileExtensions());
     }
 
     //TODO: periodically check, if the database and file_share folder have the sama data about files. If some files have been deleted, delete them from the db aswell.

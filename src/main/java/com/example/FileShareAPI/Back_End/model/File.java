@@ -1,8 +1,12 @@
 package com.example.FileShareAPI.Back_End.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDateTime;
@@ -24,6 +28,8 @@ public class File {
     private User user;
     private String fileExtension;
     private String fileName;
+    @Nullable
+    private Long sizeBytes;
     @Column(length = 1000)
     private String description;
     private LocalDateTime timestamp;

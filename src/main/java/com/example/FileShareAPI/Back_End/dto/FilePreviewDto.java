@@ -6,6 +6,7 @@ public record FilePreviewDto(
         String fileId,
         String userId,
         String fileName,
+        String fileExt,
         LocalDateTime timestamp
 ) {
 }
