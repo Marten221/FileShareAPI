@@ -134,6 +134,7 @@ public class FileService {
     public Page<FilePreviewDto> getFilesByKeyword(String keyword, String sorting, String extension, int page, int size) {
         System.out.println("keyword" + keyword);
 
+        page = Math.max(0, page); //Min page nr 0
         size = Math.min(size, 30); //Max page size 30
         Sort sortingMethod = findSorting(sorting);
         Pageable pageable = PageRequest.of(page, size, sortingMethod);
