@@ -50,11 +50,13 @@ public class FileService {
 
     private static File createFileObject(User fileOwner, String extension, String originalFilename, long size, String customFileName, String desc, LocalDateTime timestamp) {
         File fileObject = new File();
+        originalFilename = originalFilename.substring(0, originalFilename.lastIndexOf(".")); //remove the extension
+
         fileObject.setUser(fileOwner);
         fileObject.setFileExtension(extension);
         fileObject.setFileName(originalFilename); //TODO: remove file ext from the original filename
         fileObject.setSizeBytes(size);
-        fileObject.setFileName(customFileName == null ? originalFilename : customFileName); // If no custom name is given, use the original file Name
+        fileObject.setFileName(customFileName.isBlank() ? originalFilename : customFileName); // If no custom name is given, use the original file Name
         fileObject.setDescription(desc);
         fileObject.setTimestamp(timestamp);
 
