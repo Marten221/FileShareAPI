@@ -57,6 +57,5 @@ public class FileController {
     public ResponseEntity<Set<String>> getFileExtensions() {
         return ResponseEntity.ok().body(fileService.getFileExtensions());
     }
-
     //TODO: periodically check, if the database and file_share folder have the sama data about files. If some files have been deleted, delete them from the db aswell.
 }

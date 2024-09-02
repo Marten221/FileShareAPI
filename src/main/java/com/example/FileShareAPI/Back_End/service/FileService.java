@@ -6,11 +6,13 @@ import com.example.FileShareAPI.Back_End.model.File;
 import com.example.FileShareAPI.Back_End.model.User;
 import com.example.FileShareAPI.Back_End.repo.FileRepo;
 import com.example.FileShareAPI.Back_End.repo.UserRepo;
+import com.example.FileShareAPI.Back_End.specification.FileSpecifications;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -21,10 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static com.example.FileShareAPI.Back_End.constant.Constant.FILE_DIRECTORY;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
@@ -37,12 +36,12 @@ public class FileService {
 
     private static final Map<String, Sort> SORTING_MAP = new HashMap<>();
     static {
-        SORTING_MAP.put("name_ascending", Sort.by("file_name").ascending());
-        SORTING_MAP.put("name_descending", Sort.by("file_name").descending());
+        SORTING_MAP.put("name_ascending", Sort.by("fileName").ascending()); // Specification doesn't support snake case?? only read file from file_name
+        SORTING_MAP.put("name_descending", Sort.by("fileName").descending()); // Specification needs the class field name not the field name from the database table
         SORTING_MAP.put("date_ascending", Sort.by("timestamp").ascending());
         SORTING_MAP.put("date_descending", Sort.by("timestamp").descending());
-        SORTING_MAP.put("size_ascending", Sort.by("size_bytes").ascending());
-        SORTING_MAP.put("size_descending", Sort.by("size_bytes").descending());
+        SORTING_MAP.put("size_ascending", Sort.by("sizeBytes").ascending());
+        SORTING_MAP.put("size_descending", Sort.by("sizeBytes").descending());
     }
 
     public FilePreviewDto createFile(String id, MultipartFile file, String customFilename, String description) throws IOException {
@@ -156,10 +155,14 @@ public class FileService {
         page = Math.max(0, page); //Min page nr 0
         size = Math.min(size, 30); //Max page size 30
         Sort sortingMethod = findSorting(sorting);
+
         Pageable pageable = PageRequest.of(page, size, sortingMethod);
-        System.out.println(keyword + "  " + extension);
-        Page<File> filesPage = fileRepo.findByKeyword(keyword, extension, pageable);
-        return filesPage.map(file -> fileToPreviewDto(file));
+
+        Specification<File> spec = Specification.where(FileSpecifications.hasKeyword(keyword))
+                .and(FileSpecifications.hasExtension(extension));
+
+        Page<File> filesPage = fileRepo.findAll(spec, pageable);
+        return filesPage.map(this::fileToPreviewDto);
     }
 
     private Sort findSorting(String sorting) {
