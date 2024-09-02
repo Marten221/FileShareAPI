@@ -31,17 +31,17 @@ public class FileController {
         return ResponseEntity.ok().body(fileService.createFile(id, file, customFilename, desc));
     }
 
-    @GetMapping(value = "/file/{fileName}", produces = MediaType.ALL_VALUE)
-    public ResponseEntity<byte[]> getFile(@PathVariable("fileName") String fileName) throws IOException {
-        byte[] fileContent = fileService.getFileContent(fileName);
-        HttpHeaders header = fileService.createHeader(fileName);
+    @GetMapping(value = "/download/{fileId}", produces = MediaType.ALL_VALUE)
+    public ResponseEntity<byte[]> getFile(@PathVariable("fileId") String fileId) throws IOException {
+        byte[] fileContent = fileService.getFileContent(fileId);
+        HttpHeaders header = fileService.createHeader(fileId);
 
         return new ResponseEntity<>(fileContent, header, HttpStatus.OK);
     }
 
-    @GetMapping("/findfile/{keyword}") //TODO: pagination
+    @GetMapping("/findfile/{keyword}")
     public Page<FilePreviewDto> getByKeyword(@PathVariable(value = "keyword", required = false) String keyword,
-                                             @RequestParam(value = "sorting", defaultValue = "date_ascending") String sorting,
+                                             @RequestParam(value = "sorting", defaultValue = "name_ascending") String sorting,
                                              @RequestParam(value = "extension") String extension,
                                              @RequestParam(value = "page", defaultValue = "0") int page,
                                              @RequestParam(value = "size", defaultValue = "15") int size) {

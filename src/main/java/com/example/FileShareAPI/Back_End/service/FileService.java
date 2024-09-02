@@ -21,6 +21,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -33,7 +35,20 @@ public class FileService {
     private final FileRepo fileRepo;
     private final UserRepo userRepo;
 
+    private static final Map<String, Sort> SORTING_MAP = new HashMap<>();
+    static {
+        SORTING_MAP.put("name_ascending", Sort.by("file_name").ascending());
+        SORTING_MAP.put("name_descending", Sort.by("file_name").descending());
+        SORTING_MAP.put("date_ascending", Sort.by("timestamp").ascending());
+        SORTING_MAP.put("date_descending", Sort.by("timestamp").descending());
+        SORTING_MAP.put("size_ascending", Sort.by("size_bytes").ascending());
+        SORTING_MAP.put("size_descending", Sort.by("size_bytes").descending());
+    }
+
     public FilePreviewDto createFile(String id, MultipartFile file, String customFilename, String description) throws IOException {
+        if (customFilename.length() > 255) customFilename = customFilename.substring(0, 255);
+        if (description.length() > 1000) description = description.substring(0, 1000);
+
         User fileOwner = userRepo.getReferenceById(id);
         String originalFilename = file.getOriginalFilename();
         assert originalFilename != null; //TODO: remove for production
@@ -50,13 +65,15 @@ public class FileService {
 
     private static File createFileObject(User fileOwner, String extension, String originalFilename, long size, String customFileName, String desc, LocalDateTime timestamp) {
         File fileObject = new File();
-        originalFilename = originalFilename.substring(0, originalFilename.lastIndexOf(".")); //remove the extension
+        originalFilename = originalFilename.substring(0, originalFilename.lastIndexOf(".")); //TODO: if the file has no name/extension, an error occurs
+        if (originalFilename.length() > 255) originalFilename = originalFilename.substring(0, 255);
+
 
         fileObject.setUser(fileOwner);
         fileObject.setFileExtension(extension);
         fileObject.setFileName(originalFilename); //TODO: remove file ext from the original filename
         fileObject.setSizeBytes(size);
-        fileObject.setFileName(customFileName.isBlank() ? originalFilename : customFileName); // If no custom name is given, use the original file Name
+        fileObject.setFileName(customFileName == null || customFileName.isBlank() ? originalFilename : customFileName); // If no custom name is given, use the original file Name
         fileObject.setDescription(desc);
         fileObject.setTimestamp(timestamp);
 
@@ -112,17 +129,17 @@ public class FileService {
         return String.format("%.2f %s", value, units[index - 1]);
     }
 
-    public byte[] getFileContent(String fileName) throws IOException {
-        return Files.readAllBytes(getFilePath(fileName)); //TODO: rename file before sending it
+    public byte[] getFileContent(String fileId) throws IOException {
+        return Files.readAllBytes(getFilePath(fileId)); //TODO: rename file before sending it
     }
 
-    public HttpHeaders createHeader(String fileName) throws IOException {
-        String contentType = Files.probeContentType(getFilePath(fileName));
+    public HttpHeaders createHeader(String fileId) throws IOException {
+        String contentType = Files.probeContentType(getFilePath(fileId));
         if (contentType == null) contentType = "application/octet-stream";// Default to binary stream if type is unknown
 
         HttpHeaders header = new HttpHeaders();
         header.setContentType(MediaType.parseMediaType(contentType));
-        header.setContentDispositionFormData("attachment", fileName);
+        header.setContentDispositionFormData("attachment", fileId);
 
         return header;
     }
@@ -146,11 +163,7 @@ public class FileService {
     }
 
     private Sort findSorting(String sorting) {
-        Sort sortingMethod = Sort.by("timestamp").ascending(); //default
-        if (sorting.equals("date_descending")) sortingMethod = Sort.by("timestamp").descending();
-        if (sorting.equals("size_ascending")) sortingMethod = Sort.by("size_bytes").ascending();
-        if (sorting.equals("size_descending")) sortingMethod = Sort.by("size_bytes").descending();
-        return sortingMethod;
+        return SORTING_MAP.getOrDefault(sorting, Sort.by("file_name").ascending());
     }
 
     public FileDescriptionDto getFileDescription(String fileId) {

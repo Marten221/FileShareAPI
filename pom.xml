@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.example</groupId>
-	<artifactId>FileShareAPI-Back-End</artifactId>
+	<artifactId>FileShareAPI</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>FileShareAPI-Back-End</name>
+	<name>FileShareAPI</name>
 	<description>API for file sharing application</description>
 	<url/>
 	<licenses>
