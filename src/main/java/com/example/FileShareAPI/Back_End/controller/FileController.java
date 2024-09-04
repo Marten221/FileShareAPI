@@ -26,9 +26,11 @@ public class FileController {
     public ResponseEntity<FilePreviewDto> createFile(@RequestParam("userId") String id,
                                                      @RequestParam("file") MultipartFile file,
                                                      @RequestParam(value = "customFilename", required = false) String customFilename,
-                                                     @RequestParam(value = "description", required = false) String desc) //Give the file a custom name. This is the name displayed on site
+                                                     @RequestParam(value = "description", required = false) String desc,
+                                                     @RequestParam(value = "isPublic", required = false) boolean isPublic)
+
             throws IOException {
-        return ResponseEntity.ok().body(fileService.createFile(id, file, customFilename, desc));
+        return ResponseEntity.ok().body(fileService.createFile(id, file, customFilename, desc, isPublic));
     }
 
     @GetMapping(value = "/download/{fileId}", produces = MediaType.ALL_VALUE)
@@ -43,9 +45,10 @@ public class FileController {
     public Page<FilePreviewDto> getByKeyword(@PathVariable(value = "keyword", required = false) String keyword,
                                              @RequestParam(value = "sorting", defaultValue = "name_ascending") String sorting,
                                              @RequestParam(value = "extension") String extension,
+                                             @RequestParam(value = "userId", required = false) String userId,
                                              @RequestParam(value = "page", defaultValue = "0") int page,
                                              @RequestParam(value = "size", defaultValue = "15") int size) {
-        return fileService.getFilesByKeyword(keyword, sorting, extension, page, size);
+        return fileService.getFilesByKeyword(keyword, sorting, extension, userId, page, size);
     }
 
     @GetMapping("/filedescription/{fileId}")
@@ -54,8 +57,8 @@ public class FileController {
     }
 
     @GetMapping("/extensions")
-    public ResponseEntity<Set<String>> getFileExtensions() {
-        return ResponseEntity.ok().body(fileService.getFileExtensions());
+    public ResponseEntity<Set<String>> getFileExtensions(@RequestParam(value = "userId") String userId) {
+        return ResponseEntity.ok().body(fileService.getFileExtensions(userId));
     }
     //TODO: periodically check, if the database and file_share folder have the sama data about files. If some files have been deleted, delete them from the db aswell.
 }

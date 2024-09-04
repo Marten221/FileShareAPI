@@ -1,6 +1,9 @@
 package com.example.FileShareAPI.Back_End.specification;
 
 import com.example.FileShareAPI.Back_End.model.File;
+import com.example.FileShareAPI.Back_End.model.User;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
 public class FileSpecifications {
@@ -19,6 +22,17 @@ public class FileSpecifications {
                 return criteriaBuilder.conjunction();
             }
             return criteriaBuilder.equal(root.get("fileExtension"), extension);
+        };
+    }
+
+    public static Specification<File> isAccessible(String userId) { //PROOO TUNDUB, ET TÖÖTAB see v2rk TODO: loe sisse userid failist ja vaid juhul kui ming isisestatud kood on 6ige.
+        return (root, query, criteriaBuilder) -> {
+            Predicate isPublic = criteriaBuilder.isTrue(root.get("isPublic"));
+
+            Join<File, User> userJoin = root.join("user"); // Join the File with its User to access Users fields
+            Predicate isOwner = criteriaBuilder.equal(userJoin.get("userId"), userId);
+
+            return criteriaBuilder.or(isPublic, isOwner);
         };
     }
 }
