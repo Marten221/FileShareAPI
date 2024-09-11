@@ -24,7 +24,7 @@ public class UserController {
 
 
 
-    @GetMapping({"/diskspace", "/diskspace/{id}"})
+    @GetMapping({"/diskspace", "/diskspace/{id}"}) //TODO: return in human readable format
     public ResponseEntity<DiskSpaceDto> getDiskSpace(@PathVariable(value = "id", required = false) String id) throws IOException {
         return ResponseEntity.ok().body(userService.findDiskUsage(id));
     }

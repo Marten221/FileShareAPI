@@ -23,7 +23,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.example.FileShareAPI.Back_End.constant.Constant.FILE_DIRECTORY;
@@ -50,7 +53,7 @@ public class FileService {
                                      String customFilename,
                                      String description,
                                      Boolean isPublic) throws IOException {
-        if (customFilename.length() > 255) customFilename = customFilename.substring(0, 255); //check if it is null before
+        if (customFilename.length() > 255) customFilename = customFilename.substring(0, 255); //TODO: check if it is null before
         if (description.length() > 1000) description = description.substring(0, 1000);
 
         User fileOwner = userRepo.getReferenceById(id);
@@ -124,9 +127,9 @@ public class FileService {
                 fileObject.getFileId(),
                 fileObject.getUser().getUserId(),
                 fileObject.getFileName(),
-                bytesToHumanReadable(Optional.ofNullable(fileObject.getSizeBytes()).orElse(0L)),
-                fileObject.getTimestamp(),
                 fileObject.getFileExtension(),
+                fileObject.getTimestamp(),
+                bytesToHumanReadable(Optional.ofNullable(fileObject.getSizeBytes()).orElse(0L)),
                 fileObject.getDescription()
         );
     }
@@ -168,11 +171,11 @@ public class FileService {
     }
 
     public Page<FilePreviewDto> getFilesByKeyword(String keyword,
-                                                  String sorting,
-                                                  String extension,
-                                                  String userId,
-                                                  int page,
-                                                  int size) {
+                                                String sorting,
+                                                String extension,
+                                                String userId,
+                                                int page,
+                                                int size) {
         System.out.println("keyword" + keyword);
 
         page = Math.max(0, page); //Min page nr 0

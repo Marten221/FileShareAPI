@@ -43,11 +43,11 @@ public class FileController {
 
     @GetMapping("/findfile/{keyword}")
     public Page<FilePreviewDto> getByKeyword(@PathVariable(value = "keyword", required = false) String keyword,
-                                             @RequestParam(value = "sorting", defaultValue = "name_ascending") String sorting,
-                                             @RequestParam(value = "extension") String extension,
-                                             @RequestParam(value = "userId", required = false) String userId,
-                                             @RequestParam(value = "page", defaultValue = "0") int page,
-                                             @RequestParam(value = "size", defaultValue = "15") int size) {
+                                           @RequestParam(value = "sorting", defaultValue = "name_ascending") String sorting,
+                                           @RequestParam(value = "extension") String extension,
+                                           @RequestParam(value = "userId", required = false) String userId,
+                                           @RequestParam(value = "page", defaultValue = "0") int page,
+                                           @RequestParam(value = "size", defaultValue = "15") int size) {
         return fileService.getFilesByKeyword(keyword, sorting, extension, userId, page, size);
     }
 
