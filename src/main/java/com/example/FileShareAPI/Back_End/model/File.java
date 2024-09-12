@@ -30,6 +30,7 @@ public class File {
     private String fileName;
     @Nullable
     private Long sizeBytes;
+    private String sizeHumanReadable;
     @Column(length = 1000)
     private String description;
     private LocalDateTime timestamp;

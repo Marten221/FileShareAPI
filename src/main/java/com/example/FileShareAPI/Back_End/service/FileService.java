@@ -1,7 +1,6 @@
 package com.example.FileShareAPI.Back_End.service;
 
-import com.example.FileShareAPI.Back_End.dto.FileDescriptionDto;
-import com.example.FileShareAPI.Back_End.dto.FilePreviewDto;
+import com.example.FileShareAPI.Back_End.dto.FileDto;
 import com.example.FileShareAPI.Back_End.model.File;
 import com.example.FileShareAPI.Back_End.model.User;
 import com.example.FileShareAPI.Back_End.repo.FileRepo;
@@ -25,7 +24,6 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -48,11 +46,11 @@ public class FileService {
         SORTING_MAP.put("size_descending", Sort.by("sizeBytes").descending());
     }
 
-    public FilePreviewDto createFile(String id,
-                                     MultipartFile file,
-                                     String customFilename,
-                                     String description,
-                                     Boolean isPublic) throws IOException {
+    public FileDto createFile(String id,
+                              MultipartFile file,
+                              String customFilename,
+                              String description,
+                              Boolean isPublic) throws IOException {
         if (customFilename.length() > 255) customFilename = customFilename.substring(0, 255); //TODO: check if it is null before
         if (description.length() > 1000) description = description.substring(0, 1000);
 
@@ -60,11 +58,13 @@ public class FileService {
         String originalFilename = file.getOriginalFilename();
         assert originalFilename != null; //TODO: remove for production
         String extension = originalFilename.substring(originalFilename.lastIndexOf(".") + 1);
+        long fileSize = file.getSize();
 
         File fileObject = createFileObject(fileOwner,
                 extension,
                 originalFilename,
-                file.getSize(),
+                fileSize,
+                bytesToHumanReadable(fileSize),
                 customFilename,
                 description,
                 isPublic);// Creating the file and setting its values
@@ -73,13 +73,14 @@ public class FileService {
         String newFileName = fileObject.getFileId() + "." + extension;
         saveFile(newFileName, file, id);
 
-        return fileToPreviewDto(fileObject);
+        return fileToDto(fileObject, false);
     }
 
     private static File createFileObject(User fileOwner,
                                          String extension,
                                          String originalFilename,
                                          long size,
+                                         String sizeHumanReadable,
                                          String customFileName,
                                          String desc,
                                          boolean isPublic) {
@@ -87,11 +88,11 @@ public class FileService {
         originalFilename = originalFilename.substring(0, originalFilename.lastIndexOf(".")); //TODO: if the file has no name/extension, an error occurs
         if (originalFilename.length() > 255) originalFilename = originalFilename.substring(0, 255);
 
-
         fileObject.setUser(fileOwner);
         fileObject.setFileExtension(extension);
         fileObject.setFileName(originalFilename); //TODO: remove file ext from the original filename
         fileObject.setSizeBytes(size);
+        fileObject.setSizeHumanReadable(sizeHumanReadable);
         fileObject.setFileName(customFileName == null || customFileName.isBlank() ? originalFilename : customFileName); // If no custom name is given, use the original file Name
         fileObject.setDescription(desc);
         fileObject.setIsPublic(isPublic);
@@ -112,25 +113,19 @@ public class FileService {
         Files.copy(file.getInputStream(), fileStorageLocation.resolve(fileName), REPLACE_EXISTING);
     }
 
-    private FilePreviewDto fileToPreviewDto(File fileObject) {
-        return new FilePreviewDto(
-                fileObject.getFileId(),
-                fileObject.getUser().getUserId(),
-                fileObject.getFileName(),
-                fileObject.getFileExtension(),
-                fileObject.getTimestamp()
-        );
-    }
+    private FileDto fileToDto(File fileObject, boolean previewBool) {
+        String descriptionString = fileObject.getDescription();
+        String description;
+        if (previewBool && descriptionString.length() > 100) description = descriptionString.substring(0, 100) + "..."; // If the front end request data for cards, then the full desc is not needed
+        else description = descriptionString;
 
-    private FileDescriptionDto fileToDescriptionDto(File fileObject) {
-        return new FileDescriptionDto(
+        return new FileDto(
                 fileObject.getFileId(),
-                fileObject.getUser().getUserId(),
                 fileObject.getFileName(),
                 fileObject.getFileExtension(),
-                fileObject.getTimestamp(),
-                bytesToHumanReadable(Optional.ofNullable(fileObject.getSizeBytes()).orElse(0L)),
-                fileObject.getDescription()
+                fileObject.getSizeHumanReadable(),
+                description,
+                fileObject.getTimestamp()
         );
     }
 
@@ -170,12 +165,12 @@ public class FileService {
         return Paths.get(fileLocation);
     }
 
-    public Page<FilePreviewDto> getFilesByKeyword(String keyword,
-                                                String sorting,
-                                                String extension,
-                                                String userId,
-                                                int page,
-                                                int size) {
+    public Page<FileDto> getFilesByKeyword(String keyword,
+                                           String sorting,
+                                           String extension,
+                                           String userId,
+                                           int page,
+                                           int size) {
         System.out.println("keyword" + keyword);
 
         page = Math.max(0, page); //Min page nr 0
@@ -189,15 +184,15 @@ public class FileService {
                 .and(FileSpecifications.hasExtension(extension));
 
         Page<File> filesPage = fileRepo.findAll(spec, pageable);
-        return filesPage.map(this::fileToPreviewDto);
+        return filesPage.map(file -> fileToDto(file, true));
     }
 
     private Sort findSorting(String sorting) {
         return SORTING_MAP.getOrDefault(sorting, Sort.by("file_name").ascending());
     }
 
-    public FileDescriptionDto getFileDescription(String fileId) {
-        return fileToDescriptionDto(fileRepo.getReferenceById(fileId)); //TODO: FileDescriptionDto
+    public FileDto getFileDescription(String fileId) {
+        return fileToDto(fileRepo.getReferenceById(fileId), false);
     }
 
 

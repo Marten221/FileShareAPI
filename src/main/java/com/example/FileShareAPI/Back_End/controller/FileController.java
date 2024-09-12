@@ -1,7 +1,6 @@
 package com.example.FileShareAPI.Back_End.controller;
 
-import com.example.FileShareAPI.Back_End.dto.FileDescriptionDto;
-import com.example.FileShareAPI.Back_End.dto.FilePreviewDto;
+import com.example.FileShareAPI.Back_End.dto.FileDto;
 import com.example.FileShareAPI.Back_End.service.FileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Set;
-
+//TODO: http response codes
 @RestController
 @RequiredArgsConstructor
 public class FileController {
@@ -23,11 +22,11 @@ public class FileController {
     private final FileService fileService;
 
     @PostMapping("/file")
-    public ResponseEntity<FilePreviewDto> createFile(@RequestParam("userId") String id,
-                                                     @RequestParam("file") MultipartFile file,
-                                                     @RequestParam(value = "customFilename", required = false) String customFilename,
-                                                     @RequestParam(value = "description", required = false) String desc,
-                                                     @RequestParam(value = "isPublic", required = false) boolean isPublic)
+    public ResponseEntity<FileDto> createFile(@RequestParam("userId") String id,
+                                              @RequestParam("file") MultipartFile file,
+                                              @RequestParam(value = "customFilename", required = false) String customFilename,
+                                              @RequestParam(value = "description", required = false) String desc,
+                                              @RequestParam(value = "isPublic", required = false) boolean isPublic)
 
             throws IOException {
         return ResponseEntity.ok().body(fileService.createFile(id, file, customFilename, desc, isPublic));
@@ -42,17 +41,17 @@ public class FileController {
     }
 
     @GetMapping("/findfile/{keyword}")
-    public Page<FilePreviewDto> getByKeyword(@PathVariable(value = "keyword", required = false) String keyword,
-                                           @RequestParam(value = "sorting", defaultValue = "name_ascending") String sorting,
-                                           @RequestParam(value = "extension") String extension,
-                                           @RequestParam(value = "userId", required = false) String userId,
-                                           @RequestParam(value = "page", defaultValue = "0") int page,
-                                           @RequestParam(value = "size", defaultValue = "15") int size) {
+    public Page<FileDto> getByKeyword(@PathVariable(value = "keyword", required = false) String keyword,
+                                      @RequestParam(value = "sorting", defaultValue = "name_ascending") String sorting,
+                                      @RequestParam(value = "extension") String extension,
+                                      @RequestParam(value = "userId", required = false) String userId,
+                                      @RequestParam(value = "page", defaultValue = "0") int page,
+                                      @RequestParam(value = "size", defaultValue = "15") int size) {
         return fileService.getFilesByKeyword(keyword, sorting, extension, userId, page, size);
     }
 
     @GetMapping("/filedescription/{fileId}")
-    public ResponseEntity<FileDescriptionDto> getFileDescription(@PathVariable("fileId") String fileId) { //FileDescriptionDto instead of FileDto
+    public ResponseEntity<FileDto> getFileDescription(@PathVariable("fileId") String fileId) { //FileDescriptionDto instead of FileDto
         return ResponseEntity.ok().body(fileService.getFileDescription(fileId));
     }
 

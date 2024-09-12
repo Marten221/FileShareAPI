@@ -11,18 +11,20 @@ import java.util.Map;
 @Getter
 @Setter
 @NoArgsConstructor
-public class FilePreviewDto {
+public class FileDto { // TODO: create a single file dto and another dto just for description and human readable? Possibly save human readable size into the db.
     String fileId;
-    String userId;
     String fileName;
     String fileExt;
-    Map<String, String> timestamp; // tee ylemklass ja alamklass, saada aeg lahtivõetuna
+    String fileSize;
+    String description;
+    Map<String, String> timestamp;
 
-    public FilePreviewDto(String fileId, String userId, String fileName, String fileExt, LocalDateTime timestamp) {
+    public FileDto(String fileId, String fileName, String fileExt, String fileSize, String description, LocalDateTime timestamp) {
         this.fileId = fileId;
-        this.userId = userId;
         this.fileName = fileName;
         this.fileExt = fileExt;
+        this.fileSize = fileSize;
+        this.description = description;
 
         Map<String, String> timeMap = new HashMap<>();
         timeMap.put("year", String.valueOf(timestamp.getYear()));
