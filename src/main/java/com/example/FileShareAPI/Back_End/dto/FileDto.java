@@ -18,8 +18,9 @@ public class FileDto { // TODO: create a single file dto and another dto just fo
     String fileSize;
     String description;
     Map<String, String> timestamp;
+    boolean isPublic;
 
-    public FileDto(String fileId, String fileName, String fileExt, String fileSize, String description, LocalDateTime timestamp) {
+    public FileDto(String fileId, String fileName, String fileExt, String fileSize, String description, LocalDateTime timestamp, boolean isPublic) {
         this.fileId = fileId;
         this.fileName = fileName;
         this.fileExt = fileExt;
@@ -33,6 +34,7 @@ public class FileDto { // TODO: create a single file dto and another dto just fo
         timeMap.put("hour", addLeadingZero(timestamp.getHour()));
         timeMap.put("minute", addLeadingZero(timestamp.getMinute()));
         this.timestamp = timeMap;
+        this.isPublic = isPublic; // just public in JSON. for some reason
     }
 
     private String addLeadingZero(int value){

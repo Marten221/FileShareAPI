@@ -51,12 +51,13 @@ public class FileService {
                               String customFilename,
                               String description,
                               Boolean isPublic) throws IOException {
+        assert customFilename != null;
+        assert description != null;
         if (customFilename.length() > 255) customFilename = customFilename.substring(0, 255); //TODO: check if it is null before
         if (description.length() > 1000) description = description.substring(0, 1000);
 
         User fileOwner = userRepo.getReferenceById(id);
-        String originalFilename = file.getOriginalFilename();
-        assert originalFilename != null; //TODO: remove for production
+        String originalFilename = getOriginalFilename(file);
         String extension = originalFilename.substring(originalFilename.lastIndexOf(".") + 1);
         long fileSize = file.getSize();
 
@@ -76,6 +77,12 @@ public class FileService {
         return fileToDto(fileObject, false);
     }
 
+    private static String getOriginalFilename(MultipartFile file) {
+        String originalFilename = file.getOriginalFilename();
+        assert originalFilename != null; //TODO: remove for production
+        return originalFilename;
+    }
+
     private static File createFileObject(User fileOwner,
                                          String extension,
                                          String originalFilename,
@@ -93,7 +100,7 @@ public class FileService {
         fileObject.setFileName(originalFilename); //TODO: remove file ext from the original filename
         fileObject.setSizeBytes(size);
         fileObject.setSizeHumanReadable(sizeHumanReadable);
-        fileObject.setFileName(customFileName == null || customFileName.isBlank() ? originalFilename : customFileName); // If no custom name is given, use the original file Name
+        fileObject.setFileName(stringIsNullorBlank(customFileName) ? originalFilename : customFileName); // If no custom name is given, use the original file Name
         fileObject.setDescription(desc);
         fileObject.setIsPublic(isPublic);
         fileObject.setTimestamp(LocalDateTime.now());
@@ -125,7 +132,8 @@ public class FileService {
                 fileObject.getFileExtension(),
                 fileObject.getSizeHumanReadable(),
                 description,
-                fileObject.getTimestamp()
+                fileObject.getTimestamp(),
+                fileObject.getIsPublic()
         );
     }
 
@@ -201,5 +209,71 @@ public class FileService {
         return fileRepo.findAll(spec).stream()
                 .map(File::getFileExtension)
                 .collect(Collectors.toSet());
+    }
+
+    //TODO: testt!!
+    public FileDto updateFile(String userId,
+                              String fileId,
+                              MultipartFile newFile,
+                              String customFilename,
+                              String desc,
+                              boolean isPublic) throws IOException {
+        File fileToUpdate = verifyFileOwnership(userId, fileId);
+
+        if (!newFile.isEmpty()) {
+            deleteFile(userId, fileId); //If a new file was uploaded, delete the previous file.
+
+            String originalFilename = getOriginalFilename(newFile);
+            String extension = originalFilename.substring(originalFilename.lastIndexOf(".") + 1);
+            fileToUpdate.setFileExtension(extension);
+
+            saveFile(fileToUpdate.getFileId() + "." + extension, newFile, userId);
+
+            if (stringIsNullorBlank(customFilename)){ //If no custom name was specified, use the files original name
+                originalFilename = originalFilename.substring(0, originalFilename.lastIndexOf(".")); //TODO: if the file has no name/extension, an error occurs // Move to File class
+                fileToUpdate.setFileName(originalFilename);
+            }
+
+
+            long fileSize = newFile.getSize();
+            fileToUpdate.setSizeBytes(fileSize);
+            fileToUpdate.setSizeHumanReadable(bytesToHumanReadable(fileSize));
+        }
+
+        if (!stringIsNullorBlank(customFilename)) fileToUpdate.setFileName(customFilename);
+        if (!stringIsNullorBlank(desc)) fileToUpdate.setDescription(desc);
+        fileToUpdate.setIsPublic(isPublic);
+
+
+        fileToUpdate.setTimestamp(LocalDateTime.now());
+        //TODO: create another db table for logging operations made with the file
+        File updatedFile = fileRepo.save(fileToUpdate);
+
+        return fileToDto(updatedFile, false);
+    }
+
+    public void deleteFile(String userId, String fileId) throws IOException {
+        File fileToDelete = verifyFileOwnership(userId, fileId);
+        //TODO: create a class method for finding filestoragelocation.
+
+        String customFile_Directory = FILE_DIRECTORY + userId + "/" + fileId + "." + fileToDelete.getFileExtension(); // Custom folder for each user
+        Path fileStorageLocation = Paths.get(customFile_Directory).toAbsolutePath().normalize();
+
+        Files.delete(fileStorageLocation);
+    }
+
+
+
+
+    private File verifyFileOwnership(String userId, String fileId) {
+        User fileOwner = userRepo.getReferenceById(userId);
+        File fileToUpdate = fileRepo.findByUserAndFileId(fileOwner, fileId);
+        assert fileToUpdate != null; //TODO: remove for production
+        // If fileToUpdate is null, then the user is not allowed to manipulate the file/ the file doesnt exist.
+        return fileToUpdate;
+    }
+
+    private static boolean stringIsNullorBlank(String string) {
+        return string == null || string.isBlank();
     }
 }

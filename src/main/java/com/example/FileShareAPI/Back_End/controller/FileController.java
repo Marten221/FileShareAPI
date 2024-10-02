@@ -32,8 +32,20 @@ public class FileController {
         return ResponseEntity.ok().body(fileService.createFile(id, file, customFilename, desc, isPublic));
     }
 
+    @PutMapping("/file")
+    public ResponseEntity<FileDto> updateFile(@RequestParam("userId") String userId,
+                                              @RequestParam("fileId") String fileId,
+                                              @RequestParam(value = "file", required = false) MultipartFile file,
+                                              @RequestParam(value = "customFilename", required = false) String customFilename,
+                                              @RequestParam(value = "description", required = false) String desc,
+                                              @RequestParam(value = "isPublic", required = false, defaultValue = "false") Boolean isPublic)
+            throws IOException {
+        return ResponseEntity.ok().body(fileService.updateFile(userId, fileId, file, customFilename, desc, isPublic));
+    }
+
     @GetMapping(value = "/download/{fileId}", produces = MediaType.ALL_VALUE)
-    public ResponseEntity<byte[]> getFile(@PathVariable("fileId") String fileId) throws IOException {
+    public ResponseEntity<byte[]> getFile(@PathVariable("fileId") String fileId)
+            throws IOException {
         byte[] fileContent = fileService.getFileContent(fileId);
         HttpHeaders header = fileService.createHeader(fileId);
 
