@@ -1,9 +1,5 @@
 package utils;
 
-import com.example.FileShareAPI.Back_End.model.File;
-import com.example.FileShareAPI.Back_End.model.User;
-import com.example.FileShareAPI.Back_End.repo.FileRepo;
-import com.example.FileShareAPI.Back_End.repo.UserRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.web.multipart.MultipartFile;
