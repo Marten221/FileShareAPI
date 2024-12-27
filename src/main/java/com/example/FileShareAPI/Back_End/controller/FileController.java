@@ -11,6 +11,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import utils.JwtUtil;
+import utils.JwtUtil.*;
 
 import java.io.IOException;
 //TODO: http response codes
@@ -19,6 +21,17 @@ import java.io.IOException;
 public class FileController {
     @Autowired
     private final FileService fileService;
+
+    @GetMapping("/testGenerate")
+    public String testGen(@RequestParam("userId") String id) {
+        return JwtUtil.generateToken(id);
+    }
+
+    @GetMapping("/testValidate")
+    public String testValidate(@RequestParam("token") String token) {
+        return JwtUtil.validateToken(token);
+    }
+
 
     @PostMapping("/file")
     public ResponseEntity<FileDto> createFile(@RequestParam("userId") String id,

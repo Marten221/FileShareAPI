@@ -23,6 +23,8 @@ public class User {
     private String userId;
     private String firstName;
     private String lastName;
+    @Column(nullable = false, unique = true)
+    private String email;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference
