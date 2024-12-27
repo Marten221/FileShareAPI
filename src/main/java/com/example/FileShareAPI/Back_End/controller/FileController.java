@@ -9,6 +9,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import utils.JwtUtil;
@@ -30,6 +31,12 @@ public class FileController {
     @GetMapping("/testValidate")
     public String testValidate(@RequestParam("token") String token) {
         return JwtUtil.validateToken(token);
+    }
+
+    @GetMapping("/test")
+    public void test(@RequestParam("token")String token) {
+        //System.out.println(JwtUtil.validateToken((token)));
+        System.out.println(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
     }
 
 
@@ -64,14 +71,13 @@ public class FileController {
         return new ResponseEntity<>(fileContent, header, HttpStatus.OK);
     }
 
-    @GetMapping("/findfile/{keyword}")
+    @GetMapping("/public/findfile/{keyword}")
     public Page<FileDto> getByKeyword(@PathVariable(value = "keyword", required = false) String keyword,
                                       @RequestParam(value = "sorting", defaultValue = "name_ascending") String sorting,
-                                      @RequestParam(value = "extension") String extension,
-                                      @RequestParam(value = "userId", required = false) String userId,
+                                      @RequestParam(value = "extension", defaultValue = "any") String extension,
                                       @RequestParam(value = "page", defaultValue = "0") int page,
                                       @RequestParam(value = "size", defaultValue = "15") int size) {
-        return fileService.getFilesByKeyword(keyword, sorting, extension, userId, page, size);
+        return fileService.getFilesByKeyword(keyword, sorting, extension, page, size);
     }
 
     @GetMapping("/filedescription/{fileId}")

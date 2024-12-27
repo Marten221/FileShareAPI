@@ -14,8 +14,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import utils.JwtUtil;
+import utils.UserUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -33,7 +36,7 @@ public class FileService {
     private final UserRepo userRepo;
 
 
-
+    //TODO: userID from context
     public FileDto createFile(String id,
                               MultipartFile file,
                               String customFilename,
@@ -91,11 +94,9 @@ public class FileService {
     public Page<FileDto> getFilesByKeyword(String keyword,
                                            String sorting,
                                            String extension,
-                                           String userId,
                                            int page,
                                            int size) {
-        System.out.println("keyword" + keyword);
-
+        String userId = UserUtils.getUserIdfromContext();
         page = Math.max(0, page); //Min page nr 0
         size = Math.min(size, 30); //Max page size 30
         Sort sortingMethod = findSorting(sorting);
