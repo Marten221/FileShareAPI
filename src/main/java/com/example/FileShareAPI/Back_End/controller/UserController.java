@@ -18,9 +18,15 @@ public class UserController {
     private final UserService userService;
 
 
-    @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody User user) {
-        return ResponseEntity.created(URI.create("/users/userId")).body(userService.saveUser(user));
+    @PostMapping("/public/register")
+    public ResponseEntity<User> registerUser(@RequestBody User user) {
+        return ResponseEntity.created(URI.create("/users/userId")).body(userService.registerUser(user));
+    }
+
+    @PostMapping("/public/login")
+    public ResponseEntity<String> loginUser(@RequestParam(value="email") String email,
+                                            @RequestParam(value = "password") String password) {
+        return ResponseEntity.ok().body(userService.loginUser(email, password));
     }
 
 

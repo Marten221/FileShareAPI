@@ -8,7 +8,9 @@ import com.example.FileShareAPI.Back_End.repo.UserRepo;
 import com.example.FileShareAPI.Back_End.specification.FileSpecifications;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import utils.JwtUtil;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -24,9 +26,21 @@ import static com.example.FileShareAPI.Back_End.constant.Constant.FILE_DIRECTORY
 public class UserService {
     private final UserRepo userRepo;
     private final FileRepo fileRepo;
+    private final PasswordEncoder passwordEncoder;
 
-    public User saveUser(User user) {
+    public User registerUser(User user) {
+        if (userRepo.findByEmail(user.getEmail()) != null) throw new IllegalArgumentException("This email is already in use");
+        String rawPassword = user.getPassword();
+        user.setPassword(passwordEncoder.encode(rawPassword));
         return userRepo.save(user);
+    }
+
+    public String loginUser(String email, String rawPassword) {
+        User user = userRepo.findByEmail(email);
+        if (user == null || !passwordEncoder.matches(rawPassword, user.getPassword())) {
+            throw new IllegalArgumentException("Invalid email or password");
+        }
+        return JwtUtil.generateToken(user.getUserId());
     }
 
     public DiskSpaceDto findDiskUsage(String id) throws IOException {

@@ -23,13 +23,16 @@ public class JwtUtil {
     }
 
     public static String validateToken(String token) {
-        Claims claims = Jwts.parser()
-                .verifyWith(SECRET_KEY)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
-
-        return claims.getSubject();
+        try {
+            return Jwts.parser()
+                    .verifyWith(SECRET_KEY)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload()
+                    .getSubject();
+        } catch (Exception e) {
+            throw new RuntimeException("Invalid or Expired token");
+        }
     }
 
 }
