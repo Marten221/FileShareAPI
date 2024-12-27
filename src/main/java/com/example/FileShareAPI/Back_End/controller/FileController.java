@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.Set;
 //TODO: http response codes
 @RestController
 @RequiredArgsConstructor
@@ -67,9 +66,5 @@ public class FileController {
         return ResponseEntity.ok().body(fileService.getFileDescription(fileId));
     }
 
-    @GetMapping("/extensions")
-    public ResponseEntity<Set<String>> getFileExtensions(@RequestParam(value = "userId") String userId) {
-        return ResponseEntity.ok().body(fileService.getFileExtensions(userId));
-    }
     //TODO: periodically check, if the database and file_share folder have the sama data about files. If some files have been deleted, delete them from the db aswell.
 }

@@ -1,15 +1,21 @@
 package com.example.FileShareAPI.Back_End.service;
 
 import com.example.FileShareAPI.Back_End.dto.DiskSpaceDto;
+import com.example.FileShareAPI.Back_End.model.File;
 import com.example.FileShareAPI.Back_End.model.User;
+import com.example.FileShareAPI.Back_End.repo.FileRepo;
 import com.example.FileShareAPI.Back_End.repo.UserRepo;
+import com.example.FileShareAPI.Back_End.specification.FileSpecifications;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 import static com.example.FileShareAPI.Back_End.constant.Constant.FILE_DIRECTORY;
 
@@ -17,6 +23,7 @@ import static com.example.FileShareAPI.Back_End.constant.Constant.FILE_DIRECTORY
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepo userRepo;
+    private final FileRepo fileRepo;
 
     public User saveUser(User user) {
         return userRepo.save(user);
@@ -29,6 +36,14 @@ public class UserService {
         FileStore store = Files.getFileStore(path);
             // If the user has not uploaded any files, then the user does not have their own folder yet.
         return new DiskSpaceDto(store.getUsableSpace(), store.getTotalSpace(), size(path));
+    }
+
+
+    public Set<String> getFileExtensions(String userId) { //TODO: to userService?
+        Specification<File> spec = Specification.where(FileSpecifications.isAccessible(userId));
+        return fileRepo.findAll(spec).stream()
+                .map(File::getFileExtension)
+                .collect(Collectors.toSet());
     }
 
     /**

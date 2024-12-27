@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.Set;
 
 @RestController
 @RequiredArgsConstructor
@@ -23,12 +24,15 @@ public class UserController {
     }
 
 
-
     @GetMapping({"/diskspace", "/diskspace/{id}"}) //TODO: return in human readable format
     public ResponseEntity<DiskSpaceDto> getDiskSpace(@PathVariable(value = "id", required = false) String id) throws IOException {
         return ResponseEntity.ok().body(userService.findDiskUsage(id));
     }
 
 
+    @GetMapping("/extensions")
+    public ResponseEntity<Set<String>> getFileExtensions(@RequestParam(value = "userId") String userId) {
+        return ResponseEntity.ok().body(userService.getFileExtensions(userId));
+    }
 
 }
