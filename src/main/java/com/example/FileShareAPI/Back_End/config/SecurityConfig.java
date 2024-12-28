@@ -1,6 +1,5 @@
 package com.example.FileShareAPI.Back_End.config;
 
-import com.example.FileShareAPI.Back_End.JwtFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;

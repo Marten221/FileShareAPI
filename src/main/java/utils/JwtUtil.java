@@ -13,6 +13,11 @@ public class JwtUtil {
     private static final SecretKey SECRET_KEY = Keys.hmacShaKeyFor(Decoders.BASE64.decode(SECRET));
     private static final long EXPIRATION_TIME = 3600000L;
 
+    /**
+     *
+     * @param userId
+     * @return JWT token
+     */
     public static String generateToken(String userId) {
         return Jwts.builder()
                 .subject(userId)
@@ -22,6 +27,11 @@ public class JwtUtil {
                 .compact();
     }
 
+    /**
+     *
+     * @param token
+     * @return user's UUID
+     */
     public static String validateToken(String token) {
         try {
             return Jwts.parser()
