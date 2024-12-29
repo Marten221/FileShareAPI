@@ -36,9 +36,9 @@ public class UserController {
     }
 
 
-    @GetMapping("/extensions")
-    public ResponseEntity<Set<String>> getFileExtensions(@RequestParam(value = "userId") String userId) {
-        return ResponseEntity.ok().body(userService.getFileExtensions(userId));
+    @GetMapping("/public/extensions")
+    public ResponseEntity<Set<String>> getFileExtensions() {
+        return ResponseEntity.ok().body(userService.getFileExtensions());
     }
 
 }

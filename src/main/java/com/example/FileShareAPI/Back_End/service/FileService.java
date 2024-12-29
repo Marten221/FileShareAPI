@@ -2,6 +2,7 @@ package com.example.FileShareAPI.Back_End.service;
 
 import com.example.FileShareAPI.Back_End.dto.FileDto;
 import com.example.FileShareAPI.Back_End.exception.ResourceNotFoundException;
+import com.example.FileShareAPI.Back_End.exception.UnAuthorizedException;
 import com.example.FileShareAPI.Back_End.model.File;
 import com.example.FileShareAPI.Back_End.model.User;
 import com.example.FileShareAPI.Back_End.repo.FileRepo;
@@ -15,10 +16,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import utils.JwtUtil;
 import utils.UserUtils;
 
 import java.io.IOException;
@@ -38,8 +37,7 @@ public class FileService {
 
 
     //TODO: userID from context
-    public FileDto createFile(String id,
-                              MultipartFile file,
+    public FileDto createFile(MultipartFile file,
                               String customFilename,
                               String description,
                               Boolean isPublic) throws IOException {
@@ -48,7 +46,8 @@ public class FileService {
         customFilename = truncateString(customFilename, 255); //truncate method also checks for null
         description = truncateString(description, 255);
 
-        User fileOwner = userRepo.getReferenceById(id);
+        String userId = UserUtils.getUserIdfromContext();
+        User fileOwner = userRepo.getReferenceById(userId);
         String originalFilename = file.getOriginalFilename();
 
         assert originalFilename != null;
@@ -66,18 +65,18 @@ public class FileService {
 
         fileRepo.save(fileObject); // saving the file to the database and file system
         String newFileName = fileObject.getFileId() + "." + extension;
-        saveFile(newFileName, file, id);
+        saveFile(newFileName, file, userId);
 
         return fileObject.toDto(false);
     }
 
     //TODO: create a temp folder. before sending the file, move the file to temp and change its name. Then chane its name back and move it back to the original folder
     public byte[] getFileContent(String fileId) throws IOException { //TODO: check if the user has access to this file!
-        return Files.readAllBytes(getFilePath(fileId)); //TODO: rename file before sending it
+        return Files.readAllBytes(getFilePathById(fileId)); //TODO: rename file before sending it
     }
 
     public HttpHeaders createHeader(String fileId) throws IOException {
-        String contentType = Files.probeContentType(getFilePath(fileId));
+        String contentType = Files.probeContentType(getFilePathById(fileId));
         if (contentType == null) contentType = "application/octet-stream";// Default to binary stream if type is unknown
 
         HttpHeaders header = new HttpHeaders();
@@ -87,12 +86,11 @@ public class FileService {
         return header;
     }
 
-    private Path getFilePath(String fileId) {
+    private Path getFilePathById(String fileId) {
         File file = fileRepo.findById(fileId)
                 .orElseThrow(() -> new ResourceNotFoundException("The specified file was not found"));
 
-        String fileLocation = FILE_DIRECTORY + file.getUser().getUserId() + "/" + file.getFileId() + "." + file.getFileExtension();
-        return Paths.get(fileLocation);
+        return file.getFilePath();
     }
 
     public Page<FileDto> getFilesByKeyword(String keyword,
@@ -118,20 +116,20 @@ public class FileService {
 
     public FileDto getFileDescription(String fileId) {
         return fileRepo.findById(fileId)
-                        .orElseThrow(() -> new ResourceNotFoundException("The specified file was not found"))
-                        .toDto(false);
+                .orElseThrow(() -> new ResourceNotFoundException("The specified file was not found"))
+                .toDto(false);
     }
 
 
-    public FileDto updateFile(String userId,
-                              String fileId,
+    public FileDto updateFile(String fileId,
                               MultipartFile newFile,
                               String customFilename,
                               String desc,
                               boolean isPublic) throws IOException {
-        File fileToUpdate = verifyFileOwnership(userId, fileId);
+        String userId = UserUtils.getUserIdfromContext();
+        File fileToUpdate = verifyFileOwnership(userId, fileId); // If the signed-in user does not own this file, then an exception gets thrown
 
-        if (!newFile.isEmpty()) {
+        if (newFile != null) {
             deleteFile(userId, fileId); //If a new file was uploaded, delete the previous file.
 
             String originalFilename = newFile.getOriginalFilename();
@@ -141,7 +139,7 @@ public class FileService {
 
             saveFile(fileToUpdate.getFileId() + "." + extension, newFile, userId);
 
-            if (stringIsNullorBlank(customFilename)){ //If no custom name was specified, use the files original name
+            if (stringIsNullorBlank(customFilename)) { //If no custom name was specified, use the files original name
                 originalFilename = originalFilename.substring(0, originalFilename.lastIndexOf(".")); //TODO: if the file has no name/extension, an error occurs // Move to File class
                 fileToUpdate.setFileName(originalFilename);
             }
@@ -175,13 +173,11 @@ public class FileService {
     }
 
 
-
     private File verifyFileOwnership(String userId, String fileId) {
         User fileOwner = userRepo.getReferenceById(userId);
-        File fileToUpdate = fileRepo.findByUserAndFileId(fileOwner, fileId);
-        assert fileToUpdate != null; //TODO: remove for production
-        // If fileToUpdate is null, then the user is not allowed to manipulate the file/ the file doesnt exist.
-        return fileToUpdate;
+        // If fileToUpdate is null, then the user is not allowed to manipulate the file/ the file doesn't exist.
+        return fileRepo.findByUserAndFileId(fileOwner, fileId)
+                .orElseThrow(() -> new UnAuthorizedException("You are not authorized to modify this file"));
     }
 
 }

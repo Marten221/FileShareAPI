@@ -41,25 +41,24 @@ public class FileController {
 
 
     @PostMapping("/file")
-    public ResponseEntity<FileDto> createFile(@RequestParam("userId") String id,
-                                              @RequestParam("file") MultipartFile file,
+    public ResponseEntity<FileDto> createFile(@RequestParam("file") MultipartFile file,
                                               @RequestParam(value = "customFilename", required = false) String customFilename,
                                               @RequestParam(value = "description", required = false) String desc,
                                               @RequestParam(value = "isPublic", required = false) boolean isPublic)
 
             throws IOException {
-        return ResponseEntity.ok().body(fileService.createFile(id, file, customFilename, desc, isPublic));
+        return ResponseEntity.ok().body(fileService.createFile(file, customFilename, desc, isPublic));
     }
 
+    //TODO: get userId from security context instead. or else any logged in person can change any file if he knows the userId
     @PutMapping("/file")
-    public ResponseEntity<FileDto> updateFile(@RequestParam("userId") String userId,
-                                              @RequestParam("fileId") String fileId,
+    public ResponseEntity<FileDto> updateFile(@RequestParam("fileId") String fileId,
                                               @RequestParam(value = "file", required = false) MultipartFile file,
                                               @RequestParam(value = "customFilename", required = false) String customFilename,
                                               @RequestParam(value = "description", required = false) String desc,
                                               @RequestParam(value = "isPublic", required = false, defaultValue = "false") Boolean isPublic)
             throws IOException {
-        return ResponseEntity.ok().body(fileService.updateFile(userId, fileId, file, customFilename, desc, isPublic));
+        return ResponseEntity.ok().body(fileService.updateFile(fileId, file, customFilename, desc, isPublic));
     }
 
     //TODO: Check if user has access to the file. if not, throw unauthorized error.

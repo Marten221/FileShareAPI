@@ -2,6 +2,7 @@ package com.example.FileShareAPI.Back_End.config;
 
 import com.example.FileShareAPI.Back_End.exception.InvalidCredentialsException;
 import com.example.FileShareAPI.Back_End.exception.ResourceNotFoundException;
+import com.example.FileShareAPI.Back_End.exception.UnAuthorizedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -26,6 +27,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<?> handleResourceNotFoundException(ResourceNotFoundException e, WebRequest req) {
         return createErrorResponseEntity(
                 HttpStatus.NOT_FOUND,
+                e.getMessage());
+    }
+
+    @ExceptionHandler(UnAuthorizedException.class)
+    public ResponseEntity<?> handleUnAuthorizedException(Exception e, WebRequest req) {
+        return createErrorResponseEntity(
+                HttpStatus.UNAUTHORIZED,
                 e.getMessage());
     }
 

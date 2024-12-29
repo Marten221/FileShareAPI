@@ -10,8 +10,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 
+import static com.example.FileShareAPI.Back_End.constant.Constant.FILE_DIRECTORY;
 import static utils.FileUtils.stringIsNullorBlank;
 import static utils.FileUtils.truncateString;
 
@@ -81,5 +84,9 @@ public class File {
                 timestamp,
                 isPublic
         );
+    }
+
+    public Path getFilePath() {
+        return Paths.get(FILE_DIRECTORY + this.getUser().getUserId() + "/" + this.getFileId() + "." + this.getFileExtension());
     }
 }

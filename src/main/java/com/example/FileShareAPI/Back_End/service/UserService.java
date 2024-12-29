@@ -12,6 +12,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import utils.JwtUtil;
+import utils.UserUtils;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -56,7 +57,8 @@ public class UserService {
     }
 
 
-    public Set<String> getFileExtensions(String userId) {
+    public Set<String> getFileExtensions() {
+        String userId = UserUtils.getUserIdfromContext();
         Specification<File> spec = Specification.where(FileSpecifications.isAccessible(userId));
         return fileRepo.findAll(spec).stream()
                 .map(File::getFileExtension)
