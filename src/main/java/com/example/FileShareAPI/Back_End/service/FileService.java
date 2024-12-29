@@ -1,6 +1,7 @@
 package com.example.FileShareAPI.Back_End.service;
 
 import com.example.FileShareAPI.Back_End.dto.FileDto;
+import com.example.FileShareAPI.Back_End.exception.ResourceNotFoundException;
 import com.example.FileShareAPI.Back_End.model.File;
 import com.example.FileShareAPI.Back_End.model.User;
 import com.example.FileShareAPI.Back_End.repo.FileRepo;
@@ -70,6 +71,7 @@ public class FileService {
         return fileObject.toDto(false);
     }
 
+    //TODO: create a temp folder. before sending the file, move the file to temp and change its name. Then chane its name back and move it back to the original folder
     public byte[] getFileContent(String fileId) throws IOException { //TODO: check if the user has access to this file!
         return Files.readAllBytes(getFilePath(fileId)); //TODO: rename file before sending it
     }
@@ -86,7 +88,9 @@ public class FileService {
     }
 
     private Path getFilePath(String fileId) {
-        File file = fileRepo.getReferenceById(fileId);
+        File file = fileRepo.findById(fileId)
+                .orElseThrow(() -> new ResourceNotFoundException("The specified file was not found"));
+
         String fileLocation = FILE_DIRECTORY + file.getUser().getUserId() + "/" + file.getFileId() + "." + file.getFileExtension();
         return Paths.get(fileLocation);
     }
@@ -113,7 +117,9 @@ public class FileService {
 
 
     public FileDto getFileDescription(String fileId) {
-        return fileRepo.getReferenceById(fileId).toDto(false);
+        return fileRepo.findById(fileId)
+                        .orElseThrow(() -> new ResourceNotFoundException("The specified file was not found"))
+                        .toDto(false);
     }
 
 

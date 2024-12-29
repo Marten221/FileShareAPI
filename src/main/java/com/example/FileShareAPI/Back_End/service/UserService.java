@@ -1,6 +1,7 @@
 package com.example.FileShareAPI.Back_End.service;
 
 import com.example.FileShareAPI.Back_End.dto.DiskSpaceDto;
+import com.example.FileShareAPI.Back_End.exception.InvalidCredentialsException;
 import com.example.FileShareAPI.Back_End.model.File;
 import com.example.FileShareAPI.Back_End.model.User;
 import com.example.FileShareAPI.Back_End.repo.FileRepo;
@@ -29,7 +30,9 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     public User registerUser(User user) {
-        if (userRepo.findByEmail(user.getEmail()) != null) throw new IllegalArgumentException("This email is already in use");
+        if (userRepo.findByEmail(user.getEmail()) != null){
+            throw new InvalidCredentialsException("This email is already in use");
+        }
         String rawPassword = user.getPassword();
         user.setPassword(passwordEncoder.encode(rawPassword));
         return userRepo.save(user);
@@ -38,7 +41,7 @@ public class UserService {
     public String loginUser(String email, String rawPassword) {
         User user = userRepo.findByEmail(email);
         if (user == null || !passwordEncoder.matches(rawPassword, user.getPassword())) {
-            throw new IllegalArgumentException("Invalid email or password");
+            throw new InvalidCredentialsException("Invalid email or password");
         }
         return JwtUtil.generateToken(user.getUserId());
     }
@@ -53,7 +56,7 @@ public class UserService {
     }
 
 
-    public Set<String> getFileExtensions(String userId) { //TODO: to userService?
+    public Set<String> getFileExtensions(String userId) {
         Specification<File> spec = Specification.where(FileSpecifications.isAccessible(userId));
         return fileRepo.findAll(spec).stream()
                 .map(File::getFileExtension)

@@ -62,6 +62,7 @@ public class FileController {
         return ResponseEntity.ok().body(fileService.updateFile(userId, fileId, file, customFilename, desc, isPublic));
     }
 
+    //TODO: Check if user has access to the file. if not, throw unauthorized error.
     @GetMapping(value = "/download/{fileId}", produces = MediaType.ALL_VALUE)
     public ResponseEntity<byte[]> getFile(@PathVariable("fileId") String fileId)
             throws IOException {
