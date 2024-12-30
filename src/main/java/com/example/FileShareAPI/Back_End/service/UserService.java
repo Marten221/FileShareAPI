@@ -1,6 +1,7 @@
 package com.example.FileShareAPI.Back_End.service;
 
 import com.example.FileShareAPI.Back_End.dto.DiskSpaceDto;
+import com.example.FileShareAPI.Back_End.dto.LoginRequest;
 import com.example.FileShareAPI.Back_End.exception.InvalidCredentialsException;
 import com.example.FileShareAPI.Back_End.model.File;
 import com.example.FileShareAPI.Back_End.model.User;
@@ -39,7 +40,9 @@ public class UserService {
         return userRepo.save(user);
     }
 
-    public String loginUser(String email, String rawPassword) {
+    public String loginUser(LoginRequest loginRequest) {
+        String email = loginRequest.getEmail();
+        String rawPassword = loginRequest.getPassword();
         User user = userRepo.findByEmail(email);
         if (user == null || !passwordEncoder.matches(rawPassword, user.getPassword())) {
             throw new InvalidCredentialsException("Invalid email or password");
