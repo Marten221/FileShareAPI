@@ -46,8 +46,6 @@ public class File {
 //    @Column(length = 20971520)//20MB
 //    private byte[] photo;
 
-    //TODO: custom file name, file description, timestamp, etc.
-
 
     public File(User fileOwner,
                 String extension,
@@ -88,5 +86,9 @@ public class File {
 
     public Path getFilePath() {
         return Paths.get(FILE_DIRECTORY + this.getUser().getUserId() + "/" + this.getFileId() + "." + this.getFileExtension());
+    }
+
+    public String getFileNameWithExtension() {
+        return this.getFileName() + "." + this.getFileExtension();
     }
 }

@@ -11,7 +11,7 @@ import java.util.Map;
 @Getter
 @Setter
 @NoArgsConstructor
-public class FileDto { // TODO: create a single file dto and another dto just for description and human readable? Possibly save human readable size into the db.
+public class FileDto {
     String fileId;
     String fileName;
     String fileExt;

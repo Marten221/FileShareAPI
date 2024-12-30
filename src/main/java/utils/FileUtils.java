@@ -18,6 +18,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 public class FileUtils {
 
     private static final Map<String, Sort> SORTING_MAP = new HashMap<>();
+
     static {
         SORTING_MAP.put("name_ascending", Sort.by("fileName").ascending()); // Specification doesn't support snake case?? only read file from file_name
         SORTING_MAP.put("name_descending", Sort.by("fileName").descending()); // Specification needs the class field name not the field name from the database table
@@ -26,6 +27,7 @@ public class FileUtils {
         SORTING_MAP.put("size_ascending", Sort.by("sizeBytes").ascending());
         SORTING_MAP.put("size_descending", Sort.by("sizeBytes").descending());
     }
+
     public static boolean stringIsNullorBlank(String string) {
         return string == null || string.isBlank();
     }
@@ -56,8 +58,8 @@ public class FileUtils {
     }
 
     public static void saveFile(String fileName, MultipartFile file, String userId) throws IOException {
-        String customFile_Directory = FILE_DIRECTORY + userId + "/"; // Custom folder for each user
-        Path fileStorageLocation = Paths.get(customFile_Directory).toAbsolutePath().normalize();
+        String customFileDirectory = FILE_DIRECTORY + userId + "/"; // Custom folder for each user
+        Path fileStorageLocation = Paths.get(customFileDirectory).toAbsolutePath().normalize();
 
         if (!Files.exists(fileStorageLocation)) {
             Files.createDirectories(fileStorageLocation);
@@ -65,6 +67,4 @@ public class FileUtils {
 
         Files.copy(file.getInputStream(), fileStorageLocation.resolve(fileName), REPLACE_EXISTING);
     }
-
-
 }

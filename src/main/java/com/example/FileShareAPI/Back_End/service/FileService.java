@@ -25,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 import static com.example.FileShareAPI.Back_End.constant.Constant.FILE_DIRECTORY;
 import static utils.FileUtils.*;
@@ -36,7 +37,6 @@ public class FileService {
     private final UserRepo userRepo;
 
 
-    //TODO: userID from context
     public FileDto createFile(MultipartFile file,
                               String customFilename,
                               String description,
@@ -70,27 +70,32 @@ public class FileService {
         return fileObject.toDto(false);
     }
 
-    //TODO: create a temp folder. before sending the file, move the file to temp and change its name. Then chane its name back and move it back to the original folder
-    public byte[] getFileContent(String fileId) throws IOException { //TODO: check if the user has access to this file!
-        return Files.readAllBytes(getFilePathById(fileId)); //TODO: rename file before sending it
+    public byte[] getFileContent(String fileId) throws IOException {
+        File file = getFileById(fileId);
+        //If the file is not public or the logged-in user is not the owner of the file, then he may not access it.
+        if (!(file.getIsPublic() || Objects.equals(file.getUser().getUserId(), UserUtils.getUserIdfromContext()))) {
+            throw new UnAuthorizedException("You don't have access to this file");
+        }
+
+        return Files.readAllBytes(file.getFilePath());
     }
 
     public HttpHeaders createHeader(String fileId) throws IOException {
-        String contentType = Files.probeContentType(getFilePathById(fileId));
+        File file = getFileById(fileId);
+        String fileNameWithExtension = file.getFileNameWithExtension();
+        String contentType = Files.probeContentType(file.getFilePath());
         if (contentType == null) contentType = "application/octet-stream";// Default to binary stream if type is unknown
 
         HttpHeaders header = new HttpHeaders();
         header.setContentType(MediaType.parseMediaType(contentType));
-        header.setContentDispositionFormData("attachment", fileId);
+        header.setContentDispositionFormData("attachment", fileNameWithExtension);
 
         return header;
     }
 
-    private Path getFilePathById(String fileId) {
-        File file = fileRepo.findById(fileId)
+    public File getFileById(String fileId) {
+        return fileRepo.findById(fileId)
                 .orElseThrow(() -> new ResourceNotFoundException("The specified file was not found"));
-
-        return file.getFilePath();
     }
 
     public Page<FileDto> getFilesByKeyword(String keyword,
@@ -115,8 +120,7 @@ public class FileService {
 
 
     public FileDto getFileDescription(String fileId) {
-        return fileRepo.findById(fileId)
-                .orElseThrow(() -> new ResourceNotFoundException("The specified file was not found"))
+        return getFileById(fileId)
                 .toDto(false);
     }
 
@@ -137,7 +141,7 @@ public class FileService {
             String extension = originalFilename.substring(originalFilename.lastIndexOf(".") + 1);
             fileToUpdate.setFileExtension(extension);
 
-            saveFile(fileToUpdate.getFileId() + "." + extension, newFile, userId);
+            saveFile(fileToUpdate.getFileNameWithExtension(), newFile, userId);
 
             if (stringIsNullorBlank(customFilename)) { //If no custom name was specified, use the files original name
                 originalFilename = originalFilename.substring(0, originalFilename.lastIndexOf(".")); //TODO: if the file has no name/extension, an error occurs // Move to File class
@@ -166,7 +170,7 @@ public class FileService {
         File fileToDelete = verifyFileOwnership(userId, fileId);
         //TODO: create a class method for finding filestoragelocation.
 
-        String customFile_Directory = FILE_DIRECTORY + userId + "/" + fileId + "." + fileToDelete.getFileExtension(); // Custom folder for each user
+        String customFile_Directory = FILE_DIRECTORY + userId + "/" + fileToDelete.getFileNameWithExtension(); // Custom folder for each user
         Path fileStorageLocation = Paths.get(customFile_Directory).toAbsolutePath().normalize();
 
         Files.delete(fileStorageLocation);
