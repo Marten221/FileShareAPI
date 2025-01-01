@@ -31,13 +31,18 @@ public class UserService {
     private final FileRepo fileRepo;
     private final PasswordEncoder passwordEncoder;
 
-    public User registerUser(User user) {
+    public String registerUser(User user) {
+        if (!UserUtils.validateEmail(user.getEmail())) {
+            throw new InvalidCredentialsException("Incorrect email");
+        }
         if (userRepo.findByEmail(user.getEmail()) != null){
             throw new InvalidCredentialsException("This email is already in use");
         }
         String rawPassword = user.getPassword();
         user.setPassword(passwordEncoder.encode(rawPassword));
-        return userRepo.save(user);
+        user = userRepo.save(user);
+
+        return JwtUtil.generateToken(user.getUserId());
     }
 
     public String loginUser(LoginRequest loginRequest) {

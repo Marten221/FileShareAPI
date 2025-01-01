@@ -20,10 +20,11 @@ public class UserController {
 
 
     @PostMapping("/public/register")
-    public ResponseEntity<User> registerUser(@RequestBody User user) {
+    public ResponseEntity<String> registerUser(@RequestBody User user) {
         return ResponseEntity.created(URI.create("/users/userId")).body(userService.registerUser(user));
     }
 
+    //TODO> !!!!!!!!!!!! If an invalid token is provided in the sign in & register request, it gets denied.
     @PostMapping("/public/login")
     public ResponseEntity<String> loginUser(@RequestBody LoginRequest loginRequest) {
         String token = userService.loginUser(loginRequest);
