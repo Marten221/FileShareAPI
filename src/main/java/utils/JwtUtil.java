@@ -1,5 +1,6 @@
 package utils;
 
+import com.example.FileShareAPI.Back_End.exception.UnAuthorizedException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -41,7 +42,7 @@ public class JwtUtil {
                     .getPayload()
                     .getSubject();
         } catch (Exception e) {
-            throw new RuntimeException("Invalid or Expired token");
+            throw new UnAuthorizedException("Invalid or Expired token");
         }
     }
 

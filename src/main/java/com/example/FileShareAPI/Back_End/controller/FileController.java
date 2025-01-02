@@ -54,8 +54,8 @@ public class FileController {
         return new ResponseEntity<>(fileContent, header, HttpStatus.OK);
     }
 
-    @GetMapping("/public/findfile/{keyword}")
-    public Page<FileDto> getByKeyword(@PathVariable(value = "keyword", required = false) String keyword,
+    @GetMapping("/public/findfile")
+    public Page<FileDto> getByKeyword(@RequestParam(value = "keyword", required = false) String keyword,
                                       @RequestParam(value = "sorting", defaultValue = "name_ascending") String sorting,
                                       @RequestParam(value = "extension", defaultValue = "any") String extension,
                                       @RequestParam(value = "page", defaultValue = "0") int page,
