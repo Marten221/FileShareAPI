@@ -25,7 +25,6 @@ public class UserController {
         return ResponseEntity.ok().body("{\"token\":\"" + token + "\"}");
     }
 
-    //TODO> !!!!!!!!!!!! If an invalid token is provided in the sign in & register request, it gets denied.
     @PostMapping("/public/login")
     public ResponseEntity<String> loginUser(@RequestBody LoginRequest loginRequest) {
         String token = userService.loginUser(loginRequest);
