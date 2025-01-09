@@ -1,6 +1,7 @@
 package com.example.FileShareAPI.Back_End.controller;
 
 import com.example.FileShareAPI.Back_End.dto.FileDto;
+import com.example.FileShareAPI.Back_End.dto.FileUploadDto;
 import com.example.FileShareAPI.Back_End.service.FileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Set;
 
 @RestController
 @RequiredArgsConstructor
@@ -25,17 +27,13 @@ public class FileController {
         System.out.println(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
     }
 
-    @PostMapping("/file")
-    public ResponseEntity<FileDto> createFile(@RequestParam("file") MultipartFile file,
-                                              @RequestParam(value = "customFilename", required = false) String customFilename,
-                                              @RequestParam(value = "description", required = false) String desc,
-                                              @RequestParam(value = "isPublic", required = false) boolean isPublic)
-
+    @PostMapping("/upload")
+    public ResponseEntity<FileDto> createFile(@ModelAttribute FileUploadDto fileUploadDto)
             throws IOException {
-        return ResponseEntity.ok().body(fileService.createFile(file, customFilename, desc, isPublic));
+        return ResponseEntity.ok().body(fileService.createFile(fileUploadDto));
     }
 
-    @PutMapping("/file")
+    @PutMapping("/update")
     public ResponseEntity<FileDto> updateFile(@RequestParam("fileId") String fileId,
                                               @RequestParam(value = "file", required = false) MultipartFile file,
                                               @RequestParam(value = "customFilename", required = false) String customFilename,
@@ -66,6 +64,11 @@ public class FileController {
     @GetMapping("/filedescription/{fileId}")
     public ResponseEntity<FileDto> getFileDescription(@PathVariable("fileId") String fileId) { //FileDescriptionDto instead of FileDto
         return ResponseEntity.ok().body(fileService.getFileDescription(fileId));
+    }
+
+    @GetMapping("/public/extensions")
+    public ResponseEntity<Set<String>> getFileExtensions() {
+        return ResponseEntity.ok().body(fileService.getFileExtensions());
     }
 
     //TODO: periodically check, if the database and file_share folder have the sama data about files. If some files have been deleted, delete them from the db aswell.

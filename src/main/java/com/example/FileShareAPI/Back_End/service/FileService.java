@@ -1,6 +1,7 @@
 package com.example.FileShareAPI.Back_End.service;
 
 import com.example.FileShareAPI.Back_End.dto.FileDto;
+import com.example.FileShareAPI.Back_End.dto.FileUploadDto;
 import com.example.FileShareAPI.Back_End.exception.ResourceNotFoundException;
 import com.example.FileShareAPI.Back_End.exception.UnAuthorizedException;
 import com.example.FileShareAPI.Back_End.model.File;
@@ -26,6 +27,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.example.FileShareAPI.Back_End.constant.Constant.FILE_DIRECTORY;
 import static utils.FileUtils.*;
@@ -36,22 +39,17 @@ public class FileService {
     private final FileRepo fileRepo;
     private final UserRepo userRepo;
 
-
-    public FileDto createFile(MultipartFile file,
-                              String customFilename,
-                              String description,
-                              Boolean isPublic) throws IOException {
-        assert customFilename != null;
-        assert description != null;
-        customFilename = truncateString(customFilename, 255); //truncate method also checks for null
-        description = truncateString(description, 255);
+    public FileDto createFile(FileUploadDto fileUploadDto) throws IOException {
+        MultipartFile file = fileUploadDto.getFile();
+        String originalFilename = fileUploadDto.getOriginalFilename();
+        String extension = fileUploadDto.getExtension();
+        String customFilename = fileUploadDto.getCustomFilename();
+        String description = fileUploadDto.getDescription();
+        boolean isPublic = fileUploadDto.isPublic();
 
         String userId = UserUtils.getUserIdfromContext();
         User fileOwner = userRepo.getReferenceById(userId);
-        String originalFilename = file.getOriginalFilename();
 
-        assert originalFilename != null;
-        String extension = originalFilename.substring(originalFilename.lastIndexOf(".") + 1);
         long fileSize = file.getSize();
 
         File fileObject = new File(fileOwner,
@@ -182,6 +180,15 @@ public class FileService {
         // If fileToUpdate is null, then the user is not allowed to manipulate the file/ the file doesn't exist.
         return fileRepo.findByUserAndFileId(fileOwner, fileId)
                 .orElseThrow(() -> new UnAuthorizedException("You are not authorized to modify this file"));
+    }
+
+    //TODO: query only file_extensions 
+    public Set<String> getFileExtensions() {
+        String userId = UserUtils.getUserIdfromContext();
+        Specification<File> spec = Specification.where(FileSpecifications.isAccessible(userId));
+        return fileRepo.findAll(spec).stream()
+                .map(File::getFileExtension)
+                .collect(Collectors.toSet());
     }
 
 }

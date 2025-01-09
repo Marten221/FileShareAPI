@@ -1,15 +1,10 @@
 package com.example.FileShareAPI.Back_End.service;
 
 import com.example.FileShareAPI.Back_End.dto.DiskSpaceDto;
-import com.example.FileShareAPI.Back_End.dto.LoginRequest;
 import com.example.FileShareAPI.Back_End.exception.InvalidCredentialsException;
-import com.example.FileShareAPI.Back_End.model.File;
 import com.example.FileShareAPI.Back_End.model.User;
-import com.example.FileShareAPI.Back_End.repo.FileRepo;
 import com.example.FileShareAPI.Back_End.repo.UserRepo;
-import com.example.FileShareAPI.Back_End.specification.FileSpecifications;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import utils.JwtUtil;
@@ -18,9 +13,7 @@ import utils.UserUtils;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 
 import static com.example.FileShareAPI.Back_End.constant.Constant.FILE_DIRECTORY;
 
@@ -28,7 +21,6 @@ import static com.example.FileShareAPI.Back_End.constant.Constant.FILE_DIRECTORY
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepo userRepo;
-    private final FileRepo fileRepo;
     private final PasswordEncoder passwordEncoder;
 
     public String registerUser(User user) {
@@ -45,9 +37,9 @@ public class UserService {
         return JwtUtil.generateToken(user.getUserId());
     }
 
-    public String loginUser(LoginRequest loginRequest) {
-        String email = loginRequest.getEmail();
-        String rawPassword = loginRequest.getPassword();
+    public String loginUser(User userCredentials) {
+        String email = userCredentials.getEmail();
+        String rawPassword = userCredentials.getPassword();
         User user = userRepo.findByEmail(email);
         if (user == null || !passwordEncoder.matches(rawPassword, user.getPassword())) {
             throw new InvalidCredentialsException("Invalid email or password");
@@ -65,13 +57,6 @@ public class UserService {
     }
 
 
-    public Set<String> getFileExtensions() {
-        String userId = UserUtils.getUserIdfromContext();
-        Specification<File> spec = Specification.where(FileSpecifications.isAccessible(userId));
-        return fileRepo.findAll(spec).stream()
-                .map(File::getFileExtension)
-                .collect(Collectors.toSet());
-    }
 
     /**
      * Attempts to calculate the size of a file or directory.

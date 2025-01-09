@@ -26,8 +26,8 @@ public class UserController {
     }
 
     @PostMapping("/public/login")
-    public ResponseEntity<String> loginUser(@RequestBody LoginRequest loginRequest) {
-        String token = userService.loginUser(loginRequest);
+    public ResponseEntity<String> loginUser(@RequestBody User userCredentials) {
+        String token = userService.loginUser(userCredentials);
         return ResponseEntity.ok().body("{\"token\":\"" + token + "\"}");
     }
 
@@ -35,12 +35,6 @@ public class UserController {
     @GetMapping({"/diskspace", "/diskspace/{id}"}) //TODO: return in human readable format
     public ResponseEntity<DiskSpaceDto> getDiskSpace(@PathVariable(value = "id", required = false) String id) throws IOException {
         return ResponseEntity.ok().body(userService.findDiskUsage(id));
-    }
-
-
-    @GetMapping("/public/extensions")
-    public ResponseEntity<Set<String>> getFileExtensions() {
-        return ResponseEntity.ok().body(userService.getFileExtensions());
     }
 
 }
