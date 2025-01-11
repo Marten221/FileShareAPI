@@ -1,7 +1,6 @@
 package com.example.FileShareAPI.Back_End.controller;
 
 import com.example.FileShareAPI.Back_End.dto.DiskSpaceDto;
-import com.example.FileShareAPI.Back_End.dto.LoginRequest;
 import com.example.FileShareAPI.Back_End.model.User;
 import com.example.FileShareAPI.Back_End.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -9,9 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.net.URI;
-import java.util.HashMap;
-import java.util.Set;
 
 @RestController
 @RequiredArgsConstructor

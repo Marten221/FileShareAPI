@@ -24,9 +24,10 @@ public class FileUploadDto {
     public String getCustomFilename() {
         String originalFilename = this.getOriginalFilename();
         if (stringIsNullorBlank(customFilename)){
-            customFilename = truncateString(originalFilename, originalFilename.lastIndexOf("."));
+            customFilename = originalFilename;
         }
 
+        //You need to truncate the custom name, if customFilename != originalFilename
         customFilename = truncateString(customFilename, 255);
 
         return customFilename;

@@ -61,6 +61,7 @@ public class FileController {
         return fileService.getFilesByKeyword(keyword, sorting, extension, page, size);
     }
 
+    // Make public, but check access to the file
     @GetMapping("/filedescription/{fileId}")
     public ResponseEntity<FileDto> getFileDescription(@PathVariable("fileId") String fileId) { //FileDescriptionDto instead of FileDto
         return ResponseEntity.ok().body(fileService.getFileDescription(fileId));
