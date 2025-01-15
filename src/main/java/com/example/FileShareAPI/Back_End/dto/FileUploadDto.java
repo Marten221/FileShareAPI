@@ -19,7 +19,7 @@ public class FileUploadDto {
     MultipartFile file;
     String customFilename;
     String description;
-    boolean isPublic = false;
+    boolean isPublic;
 
     public String getCustomFilename() {
         String originalFilename = this.getOriginalFilename();

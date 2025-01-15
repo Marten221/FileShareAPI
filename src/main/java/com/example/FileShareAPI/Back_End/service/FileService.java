@@ -71,11 +71,15 @@ public class FileService {
     public byte[] getFileContent(String fileId) throws IOException {
         File file = getFileById(fileId);
         //If the file is not public or the logged-in user is not the owner of the file, then he may not access it.
+        hasAccessToFile(file); // If the user does not have access to the file, an exception gets thrown
+
+        return Files.readAllBytes(file.getFilePath());
+    }
+
+    public void hasAccessToFile(File file) {
         if (!(file.getIsPublic() || Objects.equals(file.getUser().getUserId(), UserUtils.getUserIdfromContext()))) {
             throw new UnAuthorizedException("You don't have access to this file");
         }
-
-        return Files.readAllBytes(file.getFilePath());
     }
 
     public HttpHeaders createHeader(String fileId) throws IOException {
@@ -92,8 +96,10 @@ public class FileService {
     }
 
     public File getFileById(String fileId) {
-        return fileRepo.findById(fileId)
+        File file = fileRepo.findById(fileId)
                 .orElseThrow(() -> new ResourceNotFoundException("The specified file was not found"));
+        hasAccessToFile(file);
+        return file;
     }
 
     public Page<FileDto> getFilesByKeyword(String keyword,
@@ -118,6 +124,8 @@ public class FileService {
 
 
     public FileDto getFileDescription(String fileId) {
+        String userId = UserUtils.getUserIdfromContext();
+
         return getFileById(fileId)
                 .toDto(false);
     }
@@ -181,6 +189,7 @@ public class FileService {
         return fileRepo.findByUserAndFileId(fileOwner, fileId)
                 .orElseThrow(() -> new UnAuthorizedException("You are not authorized to modify this file"));
     }
+
 
     //TODO: query only file_extensions 
     public Set<String> getFileExtensions() {
