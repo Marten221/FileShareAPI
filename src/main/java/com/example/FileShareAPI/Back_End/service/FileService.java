@@ -2,6 +2,7 @@ package com.example.FileShareAPI.Back_End.service;
 
 import com.example.FileShareAPI.Back_End.dto.FileDto;
 import com.example.FileShareAPI.Back_End.dto.FileUploadDto;
+import com.example.FileShareAPI.Back_End.exception.InsufficientStorageException;
 import com.example.FileShareAPI.Back_End.exception.ResourceNotFoundException;
 import com.example.FileShareAPI.Back_End.exception.UnAuthorizedException;
 import com.example.FileShareAPI.Back_End.model.File;
@@ -211,6 +212,8 @@ public class FileService {
     }
 
     public void saveFile(String fileName, MultipartFile file, User user) throws IOException {
+        hasEnoughFreeSpace(user, file.getSize()); // checks if the user has enough free space, throws an exception if not.
+
         String customFileDirectory = FILE_DIRECTORY + user.getUserId() + "/"; // Custom folder for each user
         Path fileStorageLocation = Paths.get(customFileDirectory).toAbsolutePath().normalize();
 
@@ -220,6 +223,15 @@ public class FileService {
 
         Files.copy(file.getInputStream(), fileStorageLocation.resolve(fileName), REPLACE_EXISTING);
         updateUserUsedMemory(user, file.getSize());
+    }
+
+    public void hasEnoughFreeSpace(User user, long fileSize) {
+        long allowedSpace = user.getRole().getTotalAvailableBytes();
+        long usedSpace = user.getTotalMemoryUsedBytes();
+        if (usedSpace + fileSize > allowedSpace) {
+            throw new InsufficientStorageException("Insufficient free space. You have " +
+                    bytesToHumanReadable(allowedSpace - usedSpace) + " of free space left");
+        }
     }
 
     // For the delete operation, fileSizeBytes is negative.

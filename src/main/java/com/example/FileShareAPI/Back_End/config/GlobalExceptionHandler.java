@@ -1,9 +1,6 @@
 package com.example.FileShareAPI.Back_End.config;
 
-import com.example.FileShareAPI.Back_End.exception.InvalidCredentialsException;
-import com.example.FileShareAPI.Back_End.exception.RegistrationCodeInvalidException;
-import com.example.FileShareAPI.Back_End.exception.ResourceNotFoundException;
-import com.example.FileShareAPI.Back_End.exception.UnAuthorizedException;
+import com.example.FileShareAPI.Back_End.exception.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -45,6 +42,12 @@ public class GlobalExceptionHandler {
                 e.getMessage());
     }
 
+    @ExceptionHandler(InsufficientStorageException.class)
+    public ResponseEntity<?> handleInsufficientStorageException(InsufficientStorageException e, WebRequest req) {
+        return createErrorResponseEntity(
+                HttpStatus.CONFLICT,
+                e.getMessage());
+    }
 //    @ExceptionHandler(Exception.class)
 //    public ResponseEntity<?> handleGlobalException(Exception e, WebRequest req) {
 //        return createErrorResponseEntity(

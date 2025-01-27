@@ -1,6 +1,7 @@
 package utils;
 
 import com.example.FileShareAPI.Back_End.exception.UnAuthorizedException;
+import com.example.FileShareAPI.Back_End.model.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -20,7 +21,7 @@ public class JwtUtil {
      * @param userId
      * @return JWT token
      */
-    public static String generateToken(String userId) {
+    public static String generateToken(String userId, Role role) {
         return Jwts.builder()
                 .subject(userId)
                 .issuedAt(new Date())
@@ -45,6 +46,15 @@ public class JwtUtil {
         } catch (Exception e) {
             throw new UnAuthorizedException("Invalid or Expired token");
         }
+    }
+
+    public static Role extractRole(String token) {
+        return Jwts.parser()
+                .verifyWith(SECRET_KEY)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("role", Role.class);
     }
 
 }

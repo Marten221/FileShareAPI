@@ -1,17 +1,21 @@
 package com.example.FileShareAPI.Back_End.config;
 
 import com.example.FileShareAPI.Back_End.exception.UnAuthorizedException;
+import com.example.FileShareAPI.Back_End.model.Role;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 import utils.JwtUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class JwtFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
@@ -41,7 +45,7 @@ public class JwtFilter extends OncePerRequestFilter {
             userId = JwtUtil.validateToken(token); // if the token is not valid, an exception gets thrown and access is not authorized
         } catch (UnAuthorizedException e) {
             if (request.getRequestURI().startsWith("/public")) {
-                userId = "";
+                userId = "anonymous";
             } else {
                 throw e;
             }

@@ -1,5 +1,6 @@
 package com.example.FileShareAPI.Back_End.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -31,6 +32,11 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference
     private Set<File> files;
-    private Long totalMemoryUsedBytes;
+    private Long totalMemoryUsedBytes = 0L;
     private String totalMemoryUsedHumanReadable;
+
+    @ManyToOne
+    @JsonBackReference
+    @JoinColumn(name = "role_id", referencedColumnName = "id")
+    private Role role;
 }

@@ -3,11 +3,12 @@ package com.example.FileShareAPI.Back_End.service;
 import com.example.FileShareAPI.Back_End.dto.DiskSpaceDto;
 import com.example.FileShareAPI.Back_End.exception.InvalidCredentialsException;
 import com.example.FileShareAPI.Back_End.model.File;
+import com.example.FileShareAPI.Back_End.model.Role;
 import com.example.FileShareAPI.Back_End.model.User;
 import com.example.FileShareAPI.Back_End.repo.FileRepo;
+import com.example.FileShareAPI.Back_End.repo.RoleRepo;
 import com.example.FileShareAPI.Back_End.repo.UserRepo;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import utils.FileUtils;
@@ -20,8 +21,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static com.example.FileShareAPI.Back_End.constant.Constant.FILE_DIRECTORY;
-
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -29,17 +28,19 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final RegistrationCodeService registrationCodeService;
     private final FileRepo fileRepo;
-    private final StringHttpMessageConverter stringHttpMessageConverter;
+    private final RoleRepo roleRepo;
 
     public String registerUser(User user, String code) {
         validateRegistration(user, code);
 
         String rawPassword = user.getPassword();
         user.setPassword(passwordEncoder.encode(rawPassword));
+        Role role = roleRepo.getRoleByRole("USER");
+        user.setRole(role); // set the role to USER
         user = userRepo.save(user);
         registrationCodeService.setRegistrationCodeAsUsed(code);
 
-        return JwtUtil.generateToken(user.getUserId());
+        return JwtUtil.generateToken(user.getUserId(), role);
     }
 
     public void validateRegistration(User user, String code) {
@@ -59,16 +60,13 @@ public class UserService {
         if (user == null || !passwordEncoder.matches(rawPassword, user.getPassword())) {
             throw new InvalidCredentialsException("Invalid email or password");
         }
-        return JwtUtil.generateToken(user.getUserId());
+        return JwtUtil.generateToken(user.getUserId(), user.getRole());
     }
 
-    public DiskSpaceDto findDiskUsage(String id) throws IOException {
-        String directory = FILE_DIRECTORY;
-        if (id != null) directory += id;
-        Path path = Paths.get(directory);
-        FileStore store = Files.getFileStore(path);
-            // If the user has not uploaded any files, then the user does not have their own folder yet.
-        return new DiskSpaceDto(store.getUsableSpace(), store.getTotalSpace(), size(path));
+    public DiskSpaceDto findDiskUsage() {
+        String userId = UserUtils.getUserIdfromContext();
+        User user = userRepo.getReferenceById(userId);
+        return new DiskSpaceDto(user.getTotalMemoryUsedBytes(), user.getRole().getTotalAvailableBytes());
     }
 
     public String recalculateTotalMemory() {
