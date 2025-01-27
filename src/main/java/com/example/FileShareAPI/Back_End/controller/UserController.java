@@ -16,8 +16,9 @@ public class UserController {
 
 
     @PostMapping("/public/register")
-    public ResponseEntity<String> registerUser(@RequestBody User user) {
-        String token = userService.registerUser(user);
+    public ResponseEntity<String> registerUser(@RequestBody User user,
+                                               @RequestHeader("X-Registration-Code") String registrationCode) {
+        String token = userService.registerUser(user, registrationCode);
         return ResponseEntity.ok().body("{\"token\":\"" + token + "\"}");
     }
 

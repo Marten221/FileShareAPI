@@ -1,6 +1,7 @@
 package com.example.FileShareAPI.Back_End.config;
 
 import com.example.FileShareAPI.Back_End.exception.InvalidCredentialsException;
+import com.example.FileShareAPI.Back_End.exception.RegistrationCodeInvalidException;
 import com.example.FileShareAPI.Back_End.exception.ResourceNotFoundException;
 import com.example.FileShareAPI.Back_End.exception.UnAuthorizedException;
 import org.springframework.http.HttpStatus;
@@ -31,9 +32,16 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(UnAuthorizedException.class)
-    public ResponseEntity<?> handleUnAuthorizedException(Exception e, WebRequest req) {
+    public ResponseEntity<?> handleUnAuthorizedException(UnAuthorizedException e, WebRequest req) {
         return createErrorResponseEntity(
                 HttpStatus.UNAUTHORIZED,
+                e.getMessage());
+    }
+
+    @ExceptionHandler(RegistrationCodeInvalidException.class)
+    public ResponseEntity<?> handleRegistrationCodeInvalidException(RegistrationCodeInvalidException e, WebRequest req) {
+        return createErrorResponseEntity(
+                e.status,
                 e.getMessage());
     }
 

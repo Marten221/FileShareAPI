@@ -2,6 +2,7 @@ package com.example.FileShareAPI.Back_End.service;
 
 import com.example.FileShareAPI.Back_End.dto.DiskSpaceDto;
 import com.example.FileShareAPI.Back_End.exception.InvalidCredentialsException;
+import com.example.FileShareAPI.Back_End.exception.RegistrationCodeInvalidException;
 import com.example.FileShareAPI.Back_End.model.User;
 import com.example.FileShareAPI.Back_End.repo.UserRepo;
 import lombok.RequiredArgsConstructor;
@@ -22,19 +23,27 @@ import static com.example.FileShareAPI.Back_End.constant.Constant.FILE_DIRECTORY
 public class UserService {
     private final UserRepo userRepo;
     private final PasswordEncoder passwordEncoder;
+    private final RegistrationCodeService registrationCodeService;
 
-    public String registerUser(User user) {
+    public String registerUser(User user, String code) {
+        validateRegistration(user, code);
+
+        String rawPassword = user.getPassword();
+        user.setPassword(passwordEncoder.encode(rawPassword));
+        user = userRepo.save(user);
+        registrationCodeService.setRegistrationCodeAsUsed(code);
+
+        return JwtUtil.generateToken(user.getUserId());
+    }
+
+    public void validateRegistration(User user, String code) {
         if (!UserUtils.validateEmail(user.getEmail())) {
             throw new InvalidCredentialsException("Incorrect email");
         }
         if (userRepo.findByEmail(user.getEmail()) != null){
             throw new InvalidCredentialsException("This email is already in use");
         }
-        String rawPassword = user.getPassword();
-        user.setPassword(passwordEncoder.encode(rawPassword));
-        user = userRepo.save(user);
-
-        return JwtUtil.generateToken(user.getUserId());
+        registrationCodeService.validateCode(code);
     }
 
     public String loginUser(User userCredentials) {
