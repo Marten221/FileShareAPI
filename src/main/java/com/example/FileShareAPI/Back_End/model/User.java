@@ -31,5 +31,6 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference
     private Set<File> files;
-
+    private Long totalMemoryUsedBytes;
+    private String totalMemoryUsedHumanReadable;
 }

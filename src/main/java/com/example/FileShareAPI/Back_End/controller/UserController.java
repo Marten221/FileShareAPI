@@ -1,13 +1,10 @@
 package com.example.FileShareAPI.Back_End.controller;
 
-import com.example.FileShareAPI.Back_End.dto.DiskSpaceDto;
 import com.example.FileShareAPI.Back_End.model.User;
 import com.example.FileShareAPI.Back_End.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.io.IOException;
 
 @RestController
 @RequiredArgsConstructor
@@ -29,9 +26,14 @@ public class UserController {
     }
 
 
-    @GetMapping({"/diskspace", "/diskspace/{id}"}) //TODO: return in human readable format
-    public ResponseEntity<DiskSpaceDto> getDiskSpace(@PathVariable(value = "id", required = false) String id) throws IOException {
-        return ResponseEntity.ok().body(userService.findDiskUsage(id));
+    /*@GetMapping("/diskspace") //TODO: return in human readable format
+    public ResponseEntity<DiskSpaceDto> getDiskSpace() throws IOException {
+        return ResponseEntity.ok().body(userService.findDiskUsage());
+    }*/
+
+    @GetMapping("/admin/updatememory")
+    public ResponseEntity<String> updateUserTotalMemory() {
+        return ResponseEntity.ok().body(userService.recalculateTotalMemory());
     }
 
 }

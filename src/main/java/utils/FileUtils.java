@@ -1,5 +1,6 @@
 package utils;
 
+import com.example.FileShareAPI.Back_End.model.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.web.multipart.MultipartFile;
@@ -57,14 +58,5 @@ public class FileUtils {
         return input;
     }
 
-    public static void saveFile(String fileName, MultipartFile file, String userId) throws IOException {
-        String customFileDirectory = FILE_DIRECTORY + userId + "/"; // Custom folder for each user
-        Path fileStorageLocation = Paths.get(customFileDirectory).toAbsolutePath().normalize();
 
-        if (!Files.exists(fileStorageLocation)) {
-            Files.createDirectories(fileStorageLocation);
-        } // If there is no such directory, create it
-
-        Files.copy(file.getInputStream(), fileStorageLocation.resolve(fileName), REPLACE_EXISTING);
-    }
 }

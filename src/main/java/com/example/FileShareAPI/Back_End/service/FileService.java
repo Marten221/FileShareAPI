@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.example.FileShareAPI.Back_End.constant.Constant.FILE_DIRECTORY;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static utils.FileUtils.*;
 
 @Service
@@ -61,9 +62,10 @@ public class FileService {
                 description,
                 isPublic);// Creating the file object
 
-        fileRepo.save(fileObject); // saving the file to the database and file system
+        fileRepo.save(fileObject); // saving the file to the database
         String newFileName = fileObject.getFileId() + "." + extension;
-        saveFile(newFileName, file, userId);
+        saveFile(newFileName, file, fileOwner);
+
 
         return fileObject.toDto(false);
     }
@@ -95,6 +97,7 @@ public class FileService {
         return header;
     }
 
+    //Verifies if the file exists and if the user has access to the file
     public File getFileById(String fileId) {
         File file = fileRepo.findById(fileId)
                 .orElseThrow(() -> new ResourceNotFoundException("The specified file was not found"));
@@ -138,6 +141,7 @@ public class FileService {
                               boolean isPublic) throws IOException {
         String userId = UserUtils.getUserIdfromContext();
         File fileToUpdate = verifyFileOwnership(userId, fileId); // If the signed-in user does not own this file, then an exception gets thrown
+        User fileOwner = userRepo.getReferenceById(userId);
 
         if (newFile != null) {
             deleteFile(userId, fileId); //If a new file was uploaded, delete the previous file.
@@ -147,7 +151,7 @@ public class FileService {
             String extension = originalFilename.substring(originalFilename.lastIndexOf(".") + 1);
             fileToUpdate.setFileExtension(extension);
 
-            saveFile(fileToUpdate.getFileNameWithExtension(), newFile, userId);
+            saveFile(fileToUpdate.getFileNameWithExtension(), newFile, fileOwner);
 
             if (stringIsNullorBlank(customFilename)) { //If no custom name was specified, use the files original name
                 originalFilename = originalFilename.substring(0, originalFilename.lastIndexOf(".")); //TODO: if the file has no name/extension, an error occurs // Move to File class
@@ -174,12 +178,18 @@ public class FileService {
 
     public void deleteFile(String userId, String fileId) throws IOException {
         File fileToDelete = verifyFileOwnership(userId, fileId);
+        User fileOwner = userRepo.getReferenceById(userId);
         //TODO: create a class method for finding filestoragelocation.
 
         String customFile_Directory = FILE_DIRECTORY + userId + "/" + fileToDelete.getFileNameWithExtension(); // Custom folder for each user
         Path fileStorageLocation = Paths.get(customFile_Directory).toAbsolutePath().normalize();
 
         Files.delete(fileStorageLocation);
+        // Update total used user memory.
+        Long fileSizeBytes = fileToDelete.getSizeBytes();
+        if (fileSizeBytes != null) {
+            updateUserUsedMemory(fileOwner, -(fileSizeBytes));
+        }
     }
 
 
@@ -198,6 +208,32 @@ public class FileService {
         return fileRepo.findAll(spec).stream()
                 .map(File::getFileExtension)
                 .collect(Collectors.toSet());
+    }
+
+    public void saveFile(String fileName, MultipartFile file, User user) throws IOException {
+        String customFileDirectory = FILE_DIRECTORY + user.getUserId() + "/"; // Custom folder for each user
+        Path fileStorageLocation = Paths.get(customFileDirectory).toAbsolutePath().normalize();
+
+        if (!Files.exists(fileStorageLocation)) {
+            Files.createDirectories(fileStorageLocation);
+        } // If there is no such directory, create it
+
+        Files.copy(file.getInputStream(), fileStorageLocation.resolve(fileName), REPLACE_EXISTING);
+        updateUserUsedMemory(user, file.getSize());
+    }
+
+    // For the delete operation, fileSizeBytes is negative.
+    public void updateUserUsedMemory(User user, Long fileSizeBytes) {
+        Long usedMemoryBytes = user.getTotalMemoryUsedBytes();
+        if (usedMemoryBytes == null) usedMemoryBytes = 0L;
+
+        long updatedMemoryBytes = usedMemoryBytes + fileSizeBytes;
+        String updatedMemoryHumanReadable = bytesToHumanReadable(updatedMemoryBytes);
+
+        user.setTotalMemoryUsedBytes(updatedMemoryBytes);
+        user.setTotalMemoryUsedHumanReadable(updatedMemoryHumanReadable);
+
+        userRepo.save(user);
     }
 
 }

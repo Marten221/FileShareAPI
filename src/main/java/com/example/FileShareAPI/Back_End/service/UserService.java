@@ -2,18 +2,22 @@ package com.example.FileShareAPI.Back_End.service;
 
 import com.example.FileShareAPI.Back_End.dto.DiskSpaceDto;
 import com.example.FileShareAPI.Back_End.exception.InvalidCredentialsException;
-import com.example.FileShareAPI.Back_End.exception.RegistrationCodeInvalidException;
+import com.example.FileShareAPI.Back_End.model.File;
 import com.example.FileShareAPI.Back_End.model.User;
+import com.example.FileShareAPI.Back_End.repo.FileRepo;
 import com.example.FileShareAPI.Back_End.repo.UserRepo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import utils.FileUtils;
 import utils.JwtUtil;
 import utils.UserUtils;
 
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static com.example.FileShareAPI.Back_End.constant.Constant.FILE_DIRECTORY;
@@ -24,6 +28,8 @@ public class UserService {
     private final UserRepo userRepo;
     private final PasswordEncoder passwordEncoder;
     private final RegistrationCodeService registrationCodeService;
+    private final FileRepo fileRepo;
+    private final StringHttpMessageConverter stringHttpMessageConverter;
 
     public String registerUser(User user, String code) {
         validateRegistration(user, code);
@@ -65,6 +71,21 @@ public class UserService {
         return new DiskSpaceDto(store.getUsableSpace(), store.getTotalSpace(), size(path));
     }
 
+    public String recalculateTotalMemory() {
+        List<User> users = userRepo.findAll();
+        for (User user : users) {
+            List<File> usersFiles = fileRepo.findAllByUser(user);
+            Long totalMemory = 0L;
+            for (int i = 0; i < usersFiles.size(); i++) {
+                File file = usersFiles.get(i);
+                totalMemory += file.getSizeBytes();
+            }
+            user.setTotalMemoryUsedBytes(totalMemory);
+            user.setTotalMemoryUsedHumanReadable(FileUtils.bytesToHumanReadable(totalMemory));
+            userRepo.save(user);
+        }
+        return "Tehtuud";
+    }
 
 
     /**
