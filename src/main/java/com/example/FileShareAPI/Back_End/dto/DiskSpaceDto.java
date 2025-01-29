@@ -1,7 +1,9 @@
 package com.example.FileShareAPI.Back_End.dto;
 
 public record DiskSpaceDto(
-        long usedSpace,
-        long totalSpace
+        long usedMemory,
+        long totalMemory,
+        String usedMemoryHumanReadable,
+        String totalMemoryHumanReadable
 ) {
 }

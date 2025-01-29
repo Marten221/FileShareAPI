@@ -22,6 +22,7 @@ public class Role {
     private Long id;
     private String role;
     private Long totalAvailableBytes;
+    private String totalAvailableBytesHumanReadable;
 
     @OneToMany(mappedBy = "role")
     @JsonManagedReference

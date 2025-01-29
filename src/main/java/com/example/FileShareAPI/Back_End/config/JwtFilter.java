@@ -45,7 +45,7 @@ public class JwtFilter extends OncePerRequestFilter {
             userId = JwtUtil.validateToken(token); // if the token is not valid, an exception gets thrown and access is not authorized
         } catch (UnAuthorizedException e) {
             if (request.getRequestURI().startsWith("/public")) {
-                userId = "anonymous";
+                userId = "anonymousUser";
             } else {
                 throw e;
             }

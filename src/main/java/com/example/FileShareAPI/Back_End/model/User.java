@@ -1,5 +1,6 @@
 package com.example.FileShareAPI.Back_End.model;
 
+import com.example.FileShareAPI.Back_End.dto.DiskSpaceDto;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
@@ -8,6 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
+import utils.UserUtils;
 
 import java.util.Set;
 
@@ -39,4 +41,14 @@ public class User {
     @JsonBackReference
     @JoinColumn(name = "role_id", referencedColumnName = "id")
     private Role role;
+
+    @PrePersist
+    @PreUpdate
+    public void sanitizeEmail() {
+        if (email != null) email = email.toLowerCase();
+    };
+
+    public DiskSpaceDto getUserDiskSpace() {
+        return new DiskSpaceDto(this.totalMemoryUsedBytes, this.role.getTotalAvailableBytes(), this.totalMemoryUsedHumanReadable, this.role.getTotalAvailableBytesHumanReadable());
+    }
 }

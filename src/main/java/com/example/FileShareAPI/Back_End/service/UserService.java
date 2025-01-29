@@ -1,6 +1,7 @@
 package com.example.FileShareAPI.Back_End.service;
 
 import com.example.FileShareAPI.Back_End.dto.DiskSpaceDto;
+import com.example.FileShareAPI.Back_End.dto.UserDto;
 import com.example.FileShareAPI.Back_End.exception.InvalidCredentialsException;
 import com.example.FileShareAPI.Back_End.model.File;
 import com.example.FileShareAPI.Back_End.model.Role;
@@ -9,6 +10,8 @@ import com.example.FileShareAPI.Back_End.repo.FileRepo;
 import com.example.FileShareAPI.Back_End.repo.RoleRepo;
 import com.example.FileShareAPI.Back_End.repo.UserRepo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import utils.FileUtils;
@@ -54,7 +57,7 @@ public class UserService {
     }
 
     public String loginUser(User userCredentials) {
-        String email = userCredentials.getEmail();
+        String email = userCredentials.getEmail().toLowerCase();
         String rawPassword = userCredentials.getPassword();
         User user = userRepo.findByEmail(email);
         if (user == null || !passwordEncoder.matches(rawPassword, user.getPassword())) {
@@ -66,7 +69,19 @@ public class UserService {
     public DiskSpaceDto findDiskUsage() {
         String userId = UserUtils.getUserIdfromContext();
         User user = userRepo.getReferenceById(userId);
-        return new DiskSpaceDto(user.getTotalMemoryUsedBytes(), user.getRole().getTotalAvailableBytes());
+        return user.getUserDiskSpace();
+    }
+
+    //TODO check roles
+    public Boolean getLoginStatus() {
+        String userId = UserUtils.getUserIdfromContext();
+        return !userId.equalsIgnoreCase("anonymoususer");
+    }
+
+    public UserDto getUserInfo() {
+        String userId = UserUtils.getUserIdfromContext();
+        User user = userRepo.getReferenceById(userId);
+        return new UserDto(user.getFirstName());
     }
 
     public String recalculateTotalMemory() {
@@ -129,4 +144,7 @@ public class UserService {
 
         return size.get();
     }
+
+
+
 }
