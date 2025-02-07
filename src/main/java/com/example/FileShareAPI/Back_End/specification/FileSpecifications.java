@@ -25,7 +25,7 @@ public class FileSpecifications {
         };
     }
 
-    public static Specification<File> isAccessible(String userId) { //PROOO TUNDUB, ET TÖÖTAB see v2rk TODO: loe sisse userid failist ja vaid juhul kui ming isisestatud kood on 6ige.
+    public static Specification<File> isAccessible(String userId) {
         return (root, query, criteriaBuilder) -> {
             Predicate isPublic = criteriaBuilder.isTrue(root.get("isPublic"));
 

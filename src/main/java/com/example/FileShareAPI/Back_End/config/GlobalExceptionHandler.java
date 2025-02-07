@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 
+import java.nio.file.NoSuchFileException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -47,6 +48,13 @@ public class GlobalExceptionHandler {
         return createErrorResponseEntity(
                 HttpStatus.CONFLICT,
                 e.getMessage());
+    }
+
+    @ExceptionHandler(NoSuchFileException.class)
+    public ResponseEntity<?> handleNoSuchFileException(NoSuchFileException e, WebRequest req) {
+        return createErrorResponseEntity(
+                HttpStatus.NOT_FOUND,
+                "No such file!");
     }
 //    @ExceptionHandler(Exception.class)
 //    public ResponseEntity<?> handleGlobalException(Exception e, WebRequest req) {

@@ -19,6 +19,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import utils.UserUtils;
 
@@ -41,6 +42,7 @@ public class FileService {
     private final FileRepo fileRepo;
     private final UserRepo userRepo;
 
+    @Transactional
     public FileDto createFile(FileUploadDto fileUploadDto) throws IOException {
         MultipartFile file = fileUploadDto.getFile();
         String originalFilename = fileUploadDto.getOriginalFilename();
@@ -128,18 +130,21 @@ public class FileService {
 
 
     public FileDto getFileDescription(String fileId) {
-        String userId = UserUtils.getUserIdfromContext();
+        File file = getFileById(fileId);
+        hasAccessToFile(file); // will throw an exception, if the user does not have access.
+        FileDto fileDto = file.toDto(false);
+        fileDto.setOwner(isFileOwner(file));
 
-        return getFileById(fileId)
-                .toDto(false);
+        return fileDto;
     }
 
-
-    public FileDto updateFile(String fileId,
-                              MultipartFile newFile,
-                              String customFilename,
-                              String desc,
-                              boolean isPublic) throws IOException {
+    @Transactional
+    public FileDto updateFile(FileUploadDto fileUploadDto) throws IOException {
+        String fileId = fileUploadDto.getFileId();
+        MultipartFile newFile = fileUploadDto.getFile();
+        String customFilename = fileUploadDto.getCustomFilename();
+        String description = fileUploadDto.getDescription();
+        boolean isPublic = fileUploadDto.isPublic();
         String userId = UserUtils.getUserIdfromContext();
         File fileToUpdate = verifyFileOwnership(userId, fileId); // If the signed-in user does not own this file, then an exception gets thrown
         User fileOwner = userRepo.getReferenceById(userId);
@@ -147,9 +152,8 @@ public class FileService {
         if (newFile != null) {
             deleteFile(userId, fileId); //If a new file was uploaded, delete the previous file.
 
-            String originalFilename = newFile.getOriginalFilename();
-            assert originalFilename != null;
-            String extension = originalFilename.substring(originalFilename.lastIndexOf(".") + 1);
+            String originalFilename = fileUploadDto.getOriginalFilename();
+            String extension = fileUploadDto.getExtension();
             fileToUpdate.setFileExtension(extension);
 
             saveFile(fileToUpdate.getFileNameWithExtension(), newFile, fileOwner);
@@ -159,14 +163,13 @@ public class FileService {
                 fileToUpdate.setFileName(originalFilename);
             }
 
-
             long fileSize = newFile.getSize();
             fileToUpdate.setSizeBytes(fileSize);
             fileToUpdate.setSizeHumanReadable(bytesToHumanReadable(fileSize));
         }
 
         if (!stringIsNullorBlank(customFilename)) fileToUpdate.setFileName(customFilename);
-        if (!stringIsNullorBlank(desc)) fileToUpdate.setDescription(desc);
+        if (!stringIsNullorBlank(description)) fileToUpdate.setDescription(description);
         fileToUpdate.setIsPublic(isPublic);
 
 
@@ -175,6 +178,13 @@ public class FileService {
         File updatedFile = fileRepo.save(fileToUpdate);
 
         return updatedFile.toDto(false);
+    }
+
+    @Transactional
+    public void handleDeleteFileRequest(String fileId) throws IOException {
+        String userId = UserUtils.getUserIdfromContext();
+        deleteFile(userId, fileId);
+        fileRepo.deleteById(fileId);
     }
 
     public void deleteFile(String userId, String fileId) throws IOException {
@@ -235,6 +245,7 @@ public class FileService {
     }
 
     // For the delete operation, fileSizeBytes is negative.
+    @Transactional
     public void updateUserUsedMemory(User user, Long fileSizeBytes) {
         Long usedMemoryBytes = user.getTotalMemoryUsedBytes();
         if (usedMemoryBytes == null) usedMemoryBytes = 0L;
@@ -246,6 +257,11 @@ public class FileService {
         user.setTotalMemoryUsedHumanReadable(updatedMemoryHumanReadable);
 
         userRepo.save(user);
+    }
+
+    public boolean isFileOwner(File file) {
+        String userId = UserUtils.getUserIdfromContext();
+        return file.getUser().getUserId().equals(userId);
     }
 
 }

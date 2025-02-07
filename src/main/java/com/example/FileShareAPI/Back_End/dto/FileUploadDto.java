@@ -1,19 +1,16 @@
 package com.example.FileShareAPI.Back_End.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import static utils.FileUtils.stringIsNullorBlank;
 import static utils.FileUtils.truncateString;
 
-@NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
+@RequiredArgsConstructor
 public class FileUploadDto {
     String fileId;
     MultipartFile file;
@@ -22,9 +19,8 @@ public class FileUploadDto {
     boolean isPublic;
 
     public String getCustomFilename() {
-        String originalFilename = this.getOriginalFilename();
         if (stringIsNullorBlank(customFilename)){
-            customFilename = originalFilename;
+            customFilename = this.getOriginalFilename();
         }
 
         //You need to truncate the custom name, if customFilename != originalFilename
@@ -45,10 +41,10 @@ public class FileUploadDto {
     }
 
     public String getExtension(){
+        if (file == null) return null;
         String originalFilename = file.getOriginalFilename();
         if (originalFilename == null) return null;
         return originalFilename.substring(originalFilename.lastIndexOf(".") + 1);
-        //return truncateString(originalFilename, originalFilename.lastIndexOf(".") + 1);
     }
 
 }

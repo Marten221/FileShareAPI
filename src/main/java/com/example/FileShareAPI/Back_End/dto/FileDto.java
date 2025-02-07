@@ -19,6 +19,7 @@ public class FileDto {
     String description;
     Map<String, String> timestamp;
     boolean isPublic;
+    boolean isOwner;
 
     public FileDto(String fileId, String fileName, String fileExt, String fileSize, String description, LocalDateTime timestamp, boolean isPublic) {
         this.fileId = fileId;
@@ -35,9 +36,10 @@ public class FileDto {
         timeMap.put("minute", addLeadingZero(timestamp.getMinute()));
         this.timestamp = timeMap;
         this.isPublic = isPublic; // just public in JSON. for some reason
+        this.isOwner = isOwner;
     }
 
-    private String addLeadingZero(int value){
+    private String addLeadingZero(int value) {
         return (value < 10) ? "0" + value : String.valueOf(value);
     }
 }

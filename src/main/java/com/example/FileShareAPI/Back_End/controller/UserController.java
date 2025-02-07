@@ -51,7 +51,8 @@ public class UserController {
 
     @GetMapping("/admin/updatememory")
     public ResponseEntity<String> updateUserTotalMemory() {
-        return ResponseEntity.ok().body(userService.recalculateTotalMemory());
+        userService.recalculateTotalMemory();
+        return ResponseEntity.ok().body("done");
     }
 
 }

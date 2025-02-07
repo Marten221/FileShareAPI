@@ -84,11 +84,12 @@ public class File {
         );
     }
 
+
     public Path getFilePath() {
         return Paths.get(FILE_DIRECTORY + this.getUser().getUserId() + "/" + this.getFileId() + "." + this.getFileExtension());
     }
 
     public String getFileNameWithExtension() {
-        return this.getFileName() + "." + this.getFileExtension();
+        return this.fileId + "." + this.getFileExtension();
     }
 }

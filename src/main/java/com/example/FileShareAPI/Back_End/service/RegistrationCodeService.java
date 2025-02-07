@@ -6,8 +6,7 @@ import com.example.FileShareAPI.Back_End.repo.RegistrationCodeRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +21,7 @@ public class RegistrationCodeService {
         //If no errors occur, then the code is valid.
     }
 
+    @Transactional
     public void setRegistrationCodeAsUsed(String code) {
         RegistrationCode registrationCode = registrationCodeRepo.findByCode(code);
         registrationCode.setUsed(true);

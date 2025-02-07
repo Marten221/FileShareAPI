@@ -14,6 +14,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import utils.FileUtils;
 import utils.JwtUtil;
 import utils.UserUtils;
@@ -33,6 +34,7 @@ public class UserService {
     private final FileRepo fileRepo;
     private final RoleRepo roleRepo;
 
+    @Transactional
     public String registerUser(User user, String code) {
         validateRegistration(user, code);
 
@@ -84,7 +86,7 @@ public class UserService {
         return new UserDto(user.getFirstName());
     }
 
-    public String recalculateTotalMemory() {
+    public void recalculateTotalMemory() {
         List<User> users = userRepo.findAll();
         for (User user : users) {
             List<File> usersFiles = fileRepo.findAllByUser(user);
@@ -97,54 +99,5 @@ public class UserService {
             user.setTotalMemoryUsedHumanReadable(FileUtils.bytesToHumanReadable(totalMemory));
             userRepo.save(user);
         }
-        return "Tehtuud";
     }
-
-
-    /**
-     * Attempts to calculate the size of a file or directory.
-     * https://stackoverflow.com/questions/2149785/get-size-of-folder-or-file
-     * <p>
-     * Since the operation is non-atomic, the returned value may be inaccurate.
-     * However, this method is quick and does its best.
-     */
-    public static long size(Path path) {
-
-        final AtomicLong size = new AtomicLong(0);
-
-        try {
-            Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
-                @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-
-                    size.addAndGet(attrs.size());
-                    return FileVisitResult.CONTINUE;
-                }
-
-                @Override
-                public FileVisitResult visitFileFailed(Path file, IOException exc) {
-
-                    System.out.println("skipped: " + file + " (" + exc + ")");
-                    // Skip folders that can't be traversed
-                    return FileVisitResult.CONTINUE;
-                }
-
-                @Override
-                public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
-
-                    if (exc != null)
-                        System.out.println("had trouble traversing: " + dir + " (" + exc + ")");
-                    // Ignore errors traversing a folder
-                    return FileVisitResult.CONTINUE;
-                }
-            });
-        } catch (IOException e) {
-            throw new AssertionError("walkFileTree will not throw IOException if the FileVisitor does not");
-        }
-
-        return size.get();
-    }
-
-
-
 }

@@ -3,28 +3,21 @@ package com.example.FileShareAPI.Back_End.controller;
 import com.example.FileShareAPI.Back_End.dto.FileDto;
 import com.example.FileShareAPI.Back_End.dto.FileUploadDto;
 import com.example.FileShareAPI.Back_End.service.FileService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Set;
 
 @RestController
-@RequiredArgsConstructor
 public class FileController {
     private final FileService fileService;
-
-    @GetMapping("/test")
-    public void test(@RequestParam("token")String token) {
-        //System.out.println(JwtUtil.validateToken((token)));
-        System.out.println(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+    public FileController(FileService fileService) {
+        this.fileService = fileService;
     }
 
     @PostMapping("/upload")
@@ -34,13 +27,15 @@ public class FileController {
     }
 
     @PutMapping("/update")
-    public ResponseEntity<FileDto> updateFile(@RequestParam("fileId") String fileId,
-                                              @RequestParam(value = "file", required = false) MultipartFile file,
-                                              @RequestParam(value = "customFilename", required = false) String customFilename,
-                                              @RequestParam(value = "description", required = false) String desc,
-                                              @RequestParam(value = "isPublic", required = false, defaultValue = "false") Boolean isPublic)
+    public ResponseEntity<FileDto> updateFile(@ModelAttribute FileUploadDto fileUploadDto)
             throws IOException {
-        return ResponseEntity.ok().body(fileService.updateFile(fileId, file, customFilename, desc, isPublic));
+        return ResponseEntity.ok().body(fileService.updateFile(fileUploadDto));
+    }
+
+    @DeleteMapping("/delete/{fileId}")
+    public ResponseEntity<String> deleteFile(@PathVariable("fileId") String fileId) throws IOException {
+        fileService.handleDeleteFileRequest(fileId);
+        return ResponseEntity.ok("File successfully deleted");
     }
 
     @GetMapping(value = "/public/download/{fileId}", produces = MediaType.ALL_VALUE)
