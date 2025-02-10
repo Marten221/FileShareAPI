@@ -1,4 +1,13 @@
 Front-end: https://github.com/Marten221/fileshare-react
+## Live Demo
+
+You can access a running instance of this application at: [https://ojasaar.com](https://ojasaar.com).
+
+### Test Account Credentials
+
+- **Email:** test@test.com  
+- **Password:** Test
+
 # FileShareAPI
 
 The FileShareAPI is a file-sharing service built to make sharing and managing files easier and more convenient. The API allows users to upload, download, and manage files, all while keeping track of important metadata such as file name, extension, and storage usage. It is designed to give you more control over your files by hosting your own service, rather than relying on third-party services with limitations.
@@ -47,15 +56,6 @@ The FileShareAPI is a file-sharing service built to make sharing and managing fi
 - Public endpoints also enforce access control checks to ensure users can only access resources they are authorized for; unauthorized access is denied. 
 - Passwords are securely stored using hashing algorithms.  
 - No role-based access control is implemented yet.
-
-## Deployment Plan
-
-The project is intended to be containerized using Docker and deployed on a personal server for private file sharing.
-
-## Future Enhancements
-
-- Role-based access control for advanced permission management.  
-- Enhanced file sharing options (e.g., temporary download links, sharing with specific users).  
 
 ---
 
