@@ -56,12 +56,12 @@ public class GlobalExceptionHandler {
                 HttpStatus.NOT_FOUND,
                 "No such file!");
     }
-//    @ExceptionHandler(Exception.class)
-//    public ResponseEntity<?> handleGlobalException(Exception e, WebRequest req) {
-//        return createErrorResponseEntity(
-//                HttpStatus.INTERNAL_SERVER_ERROR,
-//                "An unexpected error occurred");
-//    }
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<?> handleGlobalException(Exception e, WebRequest req) {
+        return createErrorResponseEntity(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "An unexpected error occurred");
+    }
 
     public ResponseEntity<?> createErrorResponseEntity(HttpStatus httpStatus, String errorMessage) {
         Map<String, Object> errorDetails = new HashMap<>();

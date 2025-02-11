@@ -1,5 +1,7 @@
 package com.example.FileShareAPI.Back_End.constant;
 
+import io.github.cdimascio.dotenv.Dotenv;
+
 public class Constant {
-    public static final String FILE_DIRECTORY = System.getProperty("user.home") + "/file_sharing/";
+    public static final String FILE_DIRECTORY = Dotenv.load().get("FILE_DIRECTORY");
 }
