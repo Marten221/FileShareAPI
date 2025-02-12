@@ -17,13 +17,12 @@ spring:
   servlet:
     multipart:
       enabled: true
-      max-file-size: 1000MB
-      max-request-size: 1000MB
+      max-file-size: 100GB
+      max-request-size: 100GB
   mvc:
     async:
       request-timeout: 3600000
 
-# Need siin all tegelt ebavajalikud, sest 8080 on default ja prg pole mingit errorite asja vist
 server:
   port: 8080
   error:

@@ -56,6 +56,7 @@ public class GlobalExceptionHandler {
                 HttpStatus.NOT_FOUND,
                 "No such file!");
     }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleGlobalException(Exception e, WebRequest req) {
         return createErrorResponseEntity(

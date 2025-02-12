@@ -11,6 +11,7 @@ import com.example.FileShareAPI.Back_End.repo.FileRepo;
 import com.example.FileShareAPI.Back_End.repo.UserRepo;
 import com.example.FileShareAPI.Back_End.specification.FileSpecifications;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -23,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import utils.UserUtils;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -73,12 +75,14 @@ public class FileService {
         return fileObject.toDto(false);
     }
 
-    public byte[] getFileContent(String fileId) throws IOException {
+    public InputStreamResource getFileContent(String fileId) throws IOException {
         File file = getFileById(fileId);
         //If the file is not public or the logged-in user is not the owner of the file, then he may not access it.
         hasAccessToFile(file); // If the user does not have access to the file, an exception gets thrown
 
-        return Files.readAllBytes(file.getFilePath());
+        InputStreamResource resource = new InputStreamResource(new FileInputStream(String.valueOf(file.getFilePath())));
+
+        return resource;
     }
 
     public void hasAccessToFile(File file) {

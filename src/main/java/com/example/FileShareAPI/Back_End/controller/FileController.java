@@ -3,6 +3,7 @@ package com.example.FileShareAPI.Back_End.controller;
 import com.example.FileShareAPI.Back_End.dto.FileDto;
 import com.example.FileShareAPI.Back_End.dto.FileUploadDto;
 import com.example.FileShareAPI.Back_End.service.FileService;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -39,12 +40,12 @@ public class FileController {
     }
 
     @GetMapping(value = "/public/download/{fileId}", produces = MediaType.ALL_VALUE)
-    public ResponseEntity<byte[]> getFile(@PathVariable("fileId") String fileId)
+    public ResponseEntity<InputStreamResource> getFile(@PathVariable("fileId") String fileId)
             throws IOException {
-        byte[] fileContent = fileService.getFileContent(fileId);
+        InputStreamResource resource = fileService.getFileContent(fileId);
         HttpHeaders header = fileService.createHeader(fileId);
 
-        return new ResponseEntity<>(fileContent, header, HttpStatus.OK);
+        return new ResponseEntity<>(resource, header, HttpStatus.OK);
     }
 
     @GetMapping("/public/findfile")
