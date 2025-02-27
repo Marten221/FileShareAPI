@@ -9,6 +9,7 @@ import org.springframework.web.context.request.WebRequest;
 
 import java.nio.file.NoSuchFileException;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -66,7 +67,7 @@ public class GlobalExceptionHandler {
 
     public ResponseEntity<?> createErrorResponseEntity(HttpStatus httpStatus, String errorMessage) {
         Map<String, Object> errorDetails = new HashMap<>();
-        errorDetails.put("timestamp", LocalDateTime.now());
+        errorDetails.put("timestamp", LocalDateTime.now(ZoneId.of("Europe/Tallinn")));
         errorDetails.put("status", httpStatus.value());
         errorDetails.put("error", httpStatus.getReasonPhrase());
         errorDetails.put("message", errorMessage);

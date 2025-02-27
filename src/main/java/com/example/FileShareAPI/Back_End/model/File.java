@@ -13,6 +13,7 @@ import org.hibernate.annotations.UuidGenerator;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 import static com.example.FileShareAPI.Back_End.constant.Constant.FILE_DIRECTORY;
 import static utils.FileUtils.stringIsNullorBlank;
@@ -61,7 +62,7 @@ public class File {
         this.sizeBytes = size;
         this.sizeHumanReadable = sizeHumanReadable;
         this.description = desc;
-        this.timestamp = LocalDateTime.now();
+        this.timestamp = LocalDateTime.now(ZoneId.of("Europe/Tallinn"));
         this.isPublic = isPublic;
     }
 

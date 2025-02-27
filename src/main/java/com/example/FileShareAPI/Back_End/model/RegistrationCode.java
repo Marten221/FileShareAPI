@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @Entity
 @Getter
@@ -28,6 +29,6 @@ public class RegistrationCode {
     }
 
     public boolean isExpired() {
-        return this.expiresAt.isBefore(LocalDateTime.now());
+        return this.expiresAt.isBefore(LocalDateTime.now(ZoneId.of("Europe/Tallinn")));
     }
 }

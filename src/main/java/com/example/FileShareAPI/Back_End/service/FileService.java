@@ -30,6 +30,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -177,7 +178,7 @@ public class FileService {
         fileToUpdate.setIsPublic(isPublic);
 
 
-        fileToUpdate.setTimestamp(LocalDateTime.now());
+        fileToUpdate.setTimestamp(LocalDateTime.now(ZoneId.of("Europe/Tallinn")));
         //TODO: create another db table for logging operations made with the file
         File updatedFile = fileRepo.save(fileToUpdate);
 
@@ -191,6 +192,7 @@ public class FileService {
         fileRepo.deleteById(fileId);
     }
 
+    @Transactional
     public void deleteFile(String userId, String fileId) throws IOException {
         File fileToDelete = verifyFileOwnership(userId, fileId);
         User fileOwner = userRepo.getReferenceById(userId);
@@ -225,6 +227,7 @@ public class FileService {
                 .collect(Collectors.toSet());
     }
 
+    @Transactional
     public void saveFile(String fileName, MultipartFile file, User user) throws IOException {
         hasEnoughFreeSpace(user, file.getSize()); // checks if the user has enough free space, throws an exception if not.
 
