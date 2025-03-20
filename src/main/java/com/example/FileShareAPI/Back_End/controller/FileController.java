@@ -51,10 +51,11 @@ public class FileController {
     @GetMapping("/public/findfile")
     public Page<FileDto> getByKeyword(@RequestParam(value = "keyword", required = false) String keyword,
                                       @RequestParam(value = "sorting", defaultValue = "name_ascending") String sorting,
+                                      @RequestParam(value = "owner", defaultValue = "all") String owner,
                                       @RequestParam(value = "extension", defaultValue = "any") String extension,
                                       @RequestParam(value = "page", defaultValue = "0") int page,
                                       @RequestParam(value = "size", defaultValue = "15") int size) {
-        return fileService.getFilesByKeyword(keyword, sorting, extension, page, size);
+        return fileService.getFilesByKeyword(keyword, sorting, owner, extension, page, size);
     }
 
     // Make public, but check access to the file

@@ -35,4 +35,14 @@ public class FileSpecifications {
             return criteriaBuilder.or(isPublic, isOwner);
         };
     }
+
+    public static Specification<File> filterByOwner(String owner, String userId) {
+        return(root, query, criteriaBuilder) -> {
+            if (owner.equals("all")) {
+                return criteriaBuilder.conjunction();
+            }
+
+            return criteriaBuilder.equal(root.get("user").get("userId"), userId);
+        };
+    }
 }

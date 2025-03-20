@@ -66,7 +66,7 @@ public class File {
         this.isPublic = isPublic;
     }
 
-    public FileDto toDto(boolean previewBool) {
+    public FileDto toDto(boolean previewBool, boolean isOwner) {
         String descriptionData;
 
         if (previewBool) {
@@ -81,7 +81,8 @@ public class File {
                 sizeHumanReadable,
                 descriptionData,
                 timestamp,
-                isPublic
+                isPublic,
+                isOwner
         );
     }
 

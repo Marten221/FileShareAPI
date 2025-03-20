@@ -21,7 +21,7 @@ public class FileDto {
     boolean isPublic;
     boolean isOwner;
 
-    public FileDto(String fileId, String fileName, String fileExt, String fileSize, String description, LocalDateTime timestamp, boolean isPublic) {
+    public FileDto(String fileId, String fileName, String fileExt, String fileSize, String description, LocalDateTime timestamp, boolean isPublic, boolean isOwner) {
         this.fileId = fileId;
         this.fileName = fileName;
         this.fileExt = fileExt;

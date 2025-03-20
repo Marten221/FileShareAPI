@@ -73,7 +73,7 @@ public class FileService {
         saveFile(newFileName, file, fileOwner);
 
 
-        return fileObject.toDto(false);
+        return fileObject.toDto(false, true);
     }
 
     public InputStreamResource getFileContent(String fileId) throws IOException {
@@ -115,6 +115,7 @@ public class FileService {
 
     public Page<FileDto> getFilesByKeyword(String keyword,
                                            String sorting,
+                                           String owner,
                                            String extension,
                                            int page,
                                            int size) {
@@ -126,19 +127,19 @@ public class FileService {
         Pageable pageable = PageRequest.of(page, size, sortingMethod);
 
         Specification<File> spec = Specification.where(FileSpecifications.hasKeyword(keyword))
-                .and(FileSpecifications.isAccessible(userId))
-                .and(FileSpecifications.hasExtension(extension));
+                        .and(FileSpecifications.isAccessible(userId))
+                        .and(FileSpecifications.hasExtension(extension))
+                        .and(FileSpecifications.filterByOwner(owner, userId));
 
         Page<File> filesPage = fileRepo.findAll(spec, pageable);
-        return filesPage.map(file -> file.toDto(true));
+        return filesPage.map(file -> file.toDto(true, isFileOwner(file)));
     }
 
 
     public FileDto getFileDescription(String fileId) {
         File file = getFileById(fileId);
         hasAccessToFile(file); // will throw an exception, if the user does not have access.
-        FileDto fileDto = file.toDto(false);
-        fileDto.setOwner(isFileOwner(file));
+        FileDto fileDto = file.toDto(false, isFileOwner(file));
 
         return fileDto;
     }
@@ -182,7 +183,7 @@ public class FileService {
         //TODO: create another db table for logging operations made with the file
         File updatedFile = fileRepo.save(fileToUpdate);
 
-        return updatedFile.toDto(false);
+        return updatedFile.toDto(false, true);
     }
 
     @Transactional
