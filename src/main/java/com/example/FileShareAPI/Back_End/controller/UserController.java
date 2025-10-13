@@ -9,10 +9,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
 @RestController
 @RequiredArgsConstructor
 public class UserController {
@@ -44,15 +40,9 @@ public class UserController {
         return ResponseEntity.ok().body(userDto);
     }
 
-    @GetMapping("/diskspace") //TODO: return in human readable format
+    @GetMapping("/diskspace")
     public ResponseEntity<DiskSpaceDto> getDiskSpace() {
         return ResponseEntity.ok().body(userService.findDiskUsage());
-    }
-
-    @GetMapping("/admin/updatememory")
-    public ResponseEntity<String> updateUserTotalMemory() {
-        userService.recalculateTotalMemory();
-        return ResponseEntity.ok().body("done");
     }
 
 }

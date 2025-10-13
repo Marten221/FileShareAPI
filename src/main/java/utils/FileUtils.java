@@ -1,19 +1,15 @@
 package utils;
 
+import com.example.FileShareAPI.Back_End.exception.InsufficientStorageException;
+import com.example.FileShareAPI.Back_End.exception.UnAuthorizedException;
+import com.example.FileShareAPI.Back_End.model.File;
 import com.example.FileShareAPI.Back_End.model.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
-
-import static com.example.FileShareAPI.Back_End.constant.Constant.FILE_DIRECTORY;
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import java.util.Objects;
 
 @RequiredArgsConstructor
 public class FileUtils {
@@ -21,8 +17,8 @@ public class FileUtils {
     private static final Map<String, Sort> SORTING_MAP = new HashMap<>();
 
     static {
-        SORTING_MAP.put("name_ascending", Sort.by("fileName").ascending()); // Specification doesn't support snake case?? only read file from file_name
-        SORTING_MAP.put("name_descending", Sort.by("fileName").descending()); // Specification needs the class field name not the field name from the database table
+        SORTING_MAP.put("name_ascending", Sort.by("fileName").ascending()); // Specification needs the class field name not the field name from the database table
+        SORTING_MAP.put("name_descending", Sort.by("fileName").descending());
         SORTING_MAP.put("date_ascending", Sort.by("timestamp").ascending());
         SORTING_MAP.put("date_descending", Sort.by("timestamp").descending());
         SORTING_MAP.put("size_ascending", Sort.by("sizeBytes").ascending());
@@ -38,7 +34,7 @@ public class FileUtils {
         return SORTING_MAP.getOrDefault(sorting, Sort.by("file_name").ascending());
     }
 
-    public static String bytesToHumanReadable(long bytes) { //utils
+    public static String bytesToHumanReadable(long bytes) {
         if (bytes < 1000) {
             return bytes + " B";
         }
@@ -58,5 +54,23 @@ public class FileUtils {
         return input;
     }
 
+    public static void hasAccessToFile(File file) {
+        if (!(file.getIsPublic() || Objects.equals(file.getUser().getUserId(), UserUtils.getUserIdfromContext()))) {
+            throw new UnAuthorizedException("You don't have access to this file");
+        }
+    }
 
+    public static void hasEnoughFreeSpace(User user, long fileSize) {
+        long allowedSpace = user.getRole().getTotalAvailableBytes();
+        long usedSpace = user.getTotalMemoryUsedBytes();
+        if (usedSpace + fileSize > allowedSpace) {
+            throw new InsufficientStorageException("Insufficient free space. You have " +
+                    bytesToHumanReadable(allowedSpace - usedSpace) + " of free space left");
+        }
+    }
+
+    public static boolean isFileOwner(File file) {
+        String userId = UserUtils.getUserIdfromContext();
+        return file.getUser().getUserId().equals(userId);
+    }
 }

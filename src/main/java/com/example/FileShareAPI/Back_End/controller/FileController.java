@@ -21,25 +21,25 @@ public class FileController {
         this.fileService = fileService;
     }
 
-    @PostMapping("/upload")
+    @PostMapping("/file")
     public ResponseEntity<FileDto> createFile(@ModelAttribute FileUploadDto fileUploadDto)
             throws IOException {
         return ResponseEntity.ok().body(fileService.createFile(fileUploadDto));
     }
 
-    @PutMapping("/update")
+    @PutMapping("/file")
     public ResponseEntity<FileDto> updateFile(@ModelAttribute FileUploadDto fileUploadDto)
             throws IOException {
         return ResponseEntity.ok().body(fileService.updateFile(fileUploadDto));
     }
 
-    @DeleteMapping("/delete/{fileId}")
+    @DeleteMapping("/file/{fileId}")
     public ResponseEntity<String> deleteFile(@PathVariable("fileId") String fileId) throws IOException {
         fileService.handleDeleteFileRequest(fileId);
         return ResponseEntity.ok("File successfully deleted");
     }
 
-    @GetMapping(value = "/public/download/{fileId}", produces = MediaType.ALL_VALUE)
+    @GetMapping(value = "/public/filecontent/{fileId}", produces = MediaType.ALL_VALUE)
     public ResponseEntity<InputStreamResource> getFile(@PathVariable("fileId") String fileId)
             throws IOException {
         InputStreamResource resource = fileService.getFileContent(fileId);
@@ -48,7 +48,7 @@ public class FileController {
         return new ResponseEntity<>(resource, header, HttpStatus.OK);
     }
 
-    @GetMapping("/public/findfile")
+    @GetMapping("/public/files")
     public Page<FileDto> getByKeyword(@RequestParam(value = "keyword", required = false) String keyword,
                                       @RequestParam(value = "sorting", defaultValue = "name_ascending") String sorting,
                                       @RequestParam(value = "owner", defaultValue = "all") String owner,
@@ -58,9 +58,8 @@ public class FileController {
         return fileService.getFilesByKeyword(keyword, sorting, owner, extension, page, size);
     }
 
-    // Make public, but check access to the file
     @GetMapping("/public/filedescription/{fileId}")
-    public ResponseEntity<FileDto> getFileDescription(@PathVariable("fileId") String fileId) { //FileDescriptionDto instead of FileDto
+    public ResponseEntity<FileDto> getFileDescription(@PathVariable("fileId") String fileId) {
         return ResponseEntity.ok().body(fileService.getFileDescription(fileId));
     }
 
@@ -68,6 +67,4 @@ public class FileController {
     public ResponseEntity<Set<String>> getFileExtensions() {
         return ResponseEntity.ok().body(fileService.getFileExtensions());
     }
-
-    //TODO: periodically check, if the database and file_share folder have the sama data about files. If some files have been deleted, delete them from the db aswell.
 }

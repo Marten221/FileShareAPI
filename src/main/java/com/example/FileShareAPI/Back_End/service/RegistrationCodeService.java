@@ -18,7 +18,7 @@ public class RegistrationCodeService {
         if (registrationCode == null) throw new RegistrationCodeInvalidException("Registration code not found", HttpStatus.NOT_FOUND);
         if (registrationCode.isUsed()) throw new RegistrationCodeInvalidException("Registratin code has already been used", HttpStatus.CONFLICT);
         if (registrationCode.isExpired()) throw new RegistrationCodeInvalidException("Registration code has expired", HttpStatus.GONE);
-        //If no errors occur, then the code is valid.
+        //If no exceptions occur, then the code is valid.
     }
 
     @Transactional
