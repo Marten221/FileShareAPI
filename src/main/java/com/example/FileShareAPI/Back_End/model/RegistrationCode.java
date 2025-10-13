@@ -1,7 +1,10 @@
 package com.example.FileShareAPI.Back_End.model;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -21,12 +24,6 @@ public class RegistrationCode {
     private String code;
     private boolean isUsed;
     private LocalDateTime expiresAt;
-
-    public RegistrationCode(String code, boolean isUsed, LocalDateTime expiresAt) {
-        this.code = code;
-        this.isUsed = isUsed;
-        this.expiresAt = expiresAt;
-    }
 
     public boolean isExpired() {
         return this.expiresAt.isBefore(LocalDateTime.now(ZoneId.of("Europe/Tallinn")));

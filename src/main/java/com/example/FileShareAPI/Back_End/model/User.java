@@ -9,7 +9,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
-import utils.UserUtils;
 
 import java.util.Set;
 
@@ -46,7 +45,7 @@ public class User {
     @PreUpdate
     public void sanitizeEmail() {
         if (email != null) email = email.toLowerCase();
-    };
+    }
 
     public DiskSpaceDto getUserDiskSpace() {
         return new DiskSpaceDto(this.totalMemoryUsedBytes, this.role.getTotalAvailableBytes(), this.totalMemoryUsedHumanReadable, this.role.getTotalAvailableBytesHumanReadable());

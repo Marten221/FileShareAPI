@@ -1,7 +1,9 @@
 package com.example.FileShareAPI.Back_End.dto;
 
-import lombok.*;
-import org.springframework.web.bind.annotation.RequestParam;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
 
 import static utils.FileUtils.stringIsNullorBlank;
