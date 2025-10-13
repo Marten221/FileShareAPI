@@ -1,10 +1,15 @@
 package utils;
 
+import com.example.FileShareAPI.Back_End.exception.InsufficientStorageException;
+import com.example.FileShareAPI.Back_End.exception.UnAuthorizedException;
+import com.example.FileShareAPI.Back_End.model.File;
+import com.example.FileShareAPI.Back_End.model.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @RequiredArgsConstructor
 public class FileUtils {
@@ -49,4 +54,23 @@ public class FileUtils {
         return input;
     }
 
+    public static void hasAccessToFile(File file) {
+        if (!(file.getIsPublic() || Objects.equals(file.getUser().getUserId(), UserUtils.getUserIdfromContext()))) {
+            throw new UnAuthorizedException("You don't have access to this file");
+        }
+    }
+
+    public static void hasEnoughFreeSpace(User user, long fileSize) {
+        long allowedSpace = user.getRole().getTotalAvailableBytes();
+        long usedSpace = user.getTotalMemoryUsedBytes();
+        if (usedSpace + fileSize > allowedSpace) {
+            throw new InsufficientStorageException("Insufficient free space. You have " +
+                    bytesToHumanReadable(allowedSpace - usedSpace) + " of free space left");
+        }
+    }
+
+    public static boolean isFileOwner(File file) {
+        String userId = UserUtils.getUserIdfromContext();
+        return file.getUser().getUserId().equals(userId);
+    }
 }

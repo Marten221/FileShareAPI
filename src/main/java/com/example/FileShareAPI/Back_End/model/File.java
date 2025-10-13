@@ -43,9 +43,6 @@ public class File {
     private String description;
     private LocalDateTime timestamp;
     private Boolean isPublic = false;
-//    @Lob
-//    @Column(length = 20971520)//20MB
-//    private byte[] photo;
 
 
     public File(User fileOwner,

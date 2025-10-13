@@ -2,7 +2,6 @@ package com.example.FileShareAPI.Back_End.service;
 
 import com.example.FileShareAPI.Back_End.dto.FileDto;
 import com.example.FileShareAPI.Back_End.dto.FileUploadDto;
-import com.example.FileShareAPI.Back_End.exception.InsufficientStorageException;
 import com.example.FileShareAPI.Back_End.exception.ResourceNotFoundException;
 import com.example.FileShareAPI.Back_End.exception.UnAuthorizedException;
 import com.example.FileShareAPI.Back_End.model.File;
@@ -31,9 +30,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static com.example.FileShareAPI.Back_End.constant.Constant.FILE_DIRECTORY;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
@@ -66,9 +63,9 @@ public class FileService {
                 bytesToHumanReadable(fileSize),
                 customFilename,
                 description,
-                isPublic);// Creating the file object
+                isPublic);
 
-        fileRepo.save(fileObject); // saving the file to the database
+        fileRepo.save(fileObject);
         String newFileName = fileObject.getFileId() + "." + extension;
         saveFile(newFileName, file, fileOwner);
 
@@ -81,15 +78,7 @@ public class FileService {
         //If the file is not public or the logged-in user is not the owner of the file, then he may not access it.
         hasAccessToFile(file); // If the user does not have access to the file, an exception gets thrown
 
-        InputStreamResource resource = new InputStreamResource(new FileInputStream(String.valueOf(file.getFilePath())));
-
-        return resource;
-    }
-
-    public void hasAccessToFile(File file) {
-        if (!(file.getIsPublic() || Objects.equals(file.getUser().getUserId(), UserUtils.getUserIdfromContext()))) {
-            throw new UnAuthorizedException("You don't have access to this file");
-        }
+        return new InputStreamResource(new FileInputStream(String.valueOf(file.getFilePath())));
     }
 
     public HttpHeaders createHeader(String fileId) throws IOException {
@@ -139,9 +128,8 @@ public class FileService {
     public FileDto getFileDescription(String fileId) {
         File file = getFileById(fileId);
         hasAccessToFile(file); // will throw an exception, if the user does not have access.
-        FileDto fileDto = file.toDto(false, isFileOwner(file));
 
-        return fileDto;
+        return file.toDto(false, isFileOwner(file));
     }
 
     @Transactional
@@ -197,7 +185,6 @@ public class FileService {
     public void deleteFile(String userId, String fileId) throws IOException {
         File fileToDelete = verifyFileOwnership(userId, fileId);
         User fileOwner = userRepo.getReferenceById(userId);
-        //TODO: create a class method for finding filestoragelocation.
 
         String customFile_Directory = FILE_DIRECTORY + userId + "/" + fileToDelete.getFileNameWithExtension(); // Custom folder for each user
         Path fileStorageLocation = Paths.get(customFile_Directory).toAbsolutePath().normalize();
@@ -218,14 +205,9 @@ public class FileService {
                 .orElseThrow(() -> new UnAuthorizedException("You are not authorized to modify this file"));
     }
 
-
-    //TODO: query only file_extensions 
     public Set<String> getFileExtensions() {
         String userId = UserUtils.getUserIdfromContext();
-        Specification<File> spec = Specification.where(FileSpecifications.isAccessible(userId));
-        return fileRepo.findAll(spec).stream()
-                .map(File::getFileExtension)
-                .collect(Collectors.toSet());
+        return fileRepo.findAllDistinctExtensions(userId);
     }
 
     @Transactional
@@ -243,16 +225,7 @@ public class FileService {
         updateUserUsedMemory(user, file.getSize());
     }
 
-    public void hasEnoughFreeSpace(User user, long fileSize) {
-        long allowedSpace = user.getRole().getTotalAvailableBytes();
-        long usedSpace = user.getTotalMemoryUsedBytes();
-        if (usedSpace + fileSize > allowedSpace) {
-            throw new InsufficientStorageException("Insufficient free space. You have " +
-                    bytesToHumanReadable(allowedSpace - usedSpace) + " of free space left");
-        }
-    }
-
-    // For the delete operation, fileSizeBytes is negative.
+    // For the delete operation the fileSizeBytes is negative.
     @Transactional
     public void updateUserUsedMemory(User user, Long fileSizeBytes) {
         Long usedMemoryBytes = user.getTotalMemoryUsedBytes();
@@ -266,10 +239,4 @@ public class FileService {
 
         userRepo.save(user);
     }
-
-    public boolean isFileOwner(File file) {
-        String userId = UserUtils.getUserIdfromContext();
-        return file.getUser().getUserId().equals(userId);
-    }
-
 }
