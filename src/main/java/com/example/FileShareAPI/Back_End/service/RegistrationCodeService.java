@@ -16,7 +16,7 @@ public class RegistrationCodeService {
     public void validateCode(String code) {
         RegistrationCode registrationCode = registrationCodeRepo.findByCode(code);
         if (registrationCode == null) throw new RegistrationCodeInvalidException("Registration code not found", HttpStatus.NOT_FOUND);
-        if (registrationCode.isUsed()) throw new RegistrationCodeInvalidException("Registratin code has already been used", HttpStatus.CONFLICT);
+        if (registrationCode.isUsed()) throw new RegistrationCodeInvalidException("Registration code has already been used", HttpStatus.CONFLICT);
         if (registrationCode.isExpired()) throw new RegistrationCodeInvalidException("Registration code has expired", HttpStatus.GONE);
         //If no errors occur, then the code is valid.
     }
