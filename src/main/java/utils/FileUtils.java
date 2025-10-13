@@ -1,19 +1,10 @@
 package utils;
 
-import com.example.FileShareAPI.Back_End.model.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
-
-import static com.example.FileShareAPI.Back_End.constant.Constant.FILE_DIRECTORY;
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 @RequiredArgsConstructor
 public class FileUtils {
@@ -21,8 +12,8 @@ public class FileUtils {
     private static final Map<String, Sort> SORTING_MAP = new HashMap<>();
 
     static {
-        SORTING_MAP.put("name_ascending", Sort.by("fileName").ascending()); // Specification doesn't support snake case?? only read file from file_name
-        SORTING_MAP.put("name_descending", Sort.by("fileName").descending()); // Specification needs the class field name not the field name from the database table
+        SORTING_MAP.put("name_ascending", Sort.by("fileName").ascending()); // Specification needs the class field name not the field name from the database table
+        SORTING_MAP.put("name_descending", Sort.by("fileName").descending());
         SORTING_MAP.put("date_ascending", Sort.by("timestamp").ascending());
         SORTING_MAP.put("date_descending", Sort.by("timestamp").descending());
         SORTING_MAP.put("size_ascending", Sort.by("sizeBytes").ascending());
@@ -38,7 +29,7 @@ public class FileUtils {
         return SORTING_MAP.getOrDefault(sorting, Sort.by("file_name").ascending());
     }
 
-    public static String bytesToHumanReadable(long bytes) { //utils
+    public static String bytesToHumanReadable(long bytes) {
         if (bytes < 1000) {
             return bytes + " B";
         }
@@ -57,6 +48,5 @@ public class FileUtils {
         if (input != null && input.length() > maxLength) return input.substring(0, maxLength);
         return input;
     }
-
 
 }
