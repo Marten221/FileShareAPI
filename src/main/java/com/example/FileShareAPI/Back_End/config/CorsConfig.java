@@ -1,10 +1,8 @@
 package com.example.FileShareAPI.Back_End.config;
 
 import io.github.cdimascio.dotenv.Dotenv;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.Ordered;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
@@ -16,7 +14,7 @@ import java.util.List;
 public class CorsConfig {
 
     @Bean
-    public FilterRegistrationBean<CorsFilter> corsFilter() {
+    public CorsFilter corsFilter() {
         var source = new UrlBasedCorsConfigurationSource();
         var config = new CorsConfiguration();
         config.setAllowCredentials(true);
@@ -26,9 +24,7 @@ public class CorsConfig {
         config.setExposedHeaders(List.of("Authorization", "X-Registration-Code"));
         source.registerCorsConfiguration("/**", config);
 
-        var bean = new FilterRegistrationBean<>(new CorsFilter(source));
-        bean.setOrder(Ordered.HIGHEST_PRECEDENCE); // <-- ensures it runs before security
-        return bean;
+        return new CorsFilter(source);
     }
 
     private List<String> getAllowedOrigins() {
