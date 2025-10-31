@@ -31,7 +31,7 @@ public class FileUtils {
 
 
     public static Sort findSorting(String sorting) {
-        return SORTING_MAP.getOrDefault(sorting, Sort.by("file_name").ascending());
+        return SORTING_MAP.getOrDefault(sorting, Sort.by("fileName").ascending());
     }
 
     public static String bytesToHumanReadable(long bytes) {
