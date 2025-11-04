@@ -1,7 +1,9 @@
 Front-end: https://github.com/Marten221/fileshare-react
 ## Live Demo
 
-You can access a running instance of this application at: [https://ojasaar.com](https://ojasaar.com).
+You can access a running instance of this application at: [https://ojasaar.com](https://ojasaar.com/login/demo).
+
+The project is self hosted on my home server.
 
 ### Test Account Credentials
 
