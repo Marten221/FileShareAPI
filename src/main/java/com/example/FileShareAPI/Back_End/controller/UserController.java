@@ -5,9 +5,13 @@ import com.example.FileShareAPI.Back_End.dto.LoginStatusDto;
 import com.example.FileShareAPI.Back_End.dto.UserDto;
 import com.example.FileShareAPI.Back_End.model.User;
 import com.example.FileShareAPI.Back_End.service.UserService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import utils.JwtUtil;
 
 @RestController
 @RequiredArgsConstructor
@@ -16,16 +20,14 @@ public class UserController {
 
 
     @PostMapping("/public/register")
-    public ResponseEntity<String> registerUser(@RequestBody User user,
+    public ResponseEntity<Void> registerUser(@RequestBody User user,
                                                @RequestHeader("X-Registration-Code") String registrationCode) {
-        String token = userService.registerUser(user, registrationCode);
-        return ResponseEntity.ok().body("{\"token\":\"" + token + "\"}");
+        return userService.registerUser(user, registrationCode);
     }
 
     @PostMapping("/public/login")
-    public ResponseEntity<String> loginUser(@RequestBody User userCredentials) {
-        String token = userService.loginUser(userCredentials);
-        return ResponseEntity.ok().body("{\"token\":\"" + token + "\"}");
+    public ResponseEntity<Void> loginUser(@RequestBody User userCredentials) {
+        return userService.loginUser(userCredentials);
     }
 
     @GetMapping("/public/loginstatus")
@@ -45,4 +47,11 @@ public class UserController {
         return ResponseEntity.ok().body(userService.findDiskUsage());
     }
 
+    @PostMapping("/public/logout")
+    public ResponseEntity<Void> logout(HttpServletResponse response) {
+        ResponseCookie cookie = JwtUtil.generateLogoutCookie();
+
+        response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        return ResponseEntity.ok().build();
+    }
 }

@@ -8,6 +8,9 @@ import com.example.FileShareAPI.Back_End.model.User;
 import com.example.FileShareAPI.Back_End.repo.RoleRepo;
 import com.example.FileShareAPI.Back_End.repo.UserRepo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +26,7 @@ public class UserService {
     private final RoleRepo roleRepo;
 
     @Transactional
-    public String registerUser(User user, String code) {
+    public ResponseEntity<Void> registerUser(User user, String code) {
         validateRegistration(user, code);
 
         String rawPassword = user.getPassword();
@@ -35,7 +38,10 @@ public class UserService {
         user = userRepo.save(user);
         registrationCodeService.setRegistrationCodeAsUsed(code);
 
-        return JwtUtil.generateToken(user.getUserId(), role);
+        ResponseCookie cookie = JwtUtil.generateCookie(user.getUserId(), user.getRole());
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .build();
     }
 
     public void validateRegistration(User user, String code) {
@@ -48,14 +54,18 @@ public class UserService {
         registrationCodeService.validateCode(code);
     }
 
-    public String loginUser(User userCredentials) {
+    public ResponseEntity<Void> loginUser(User userCredentials) {
         String email = userCredentials.getEmail().toLowerCase();
         String rawPassword = userCredentials.getPassword();
         User user = userRepo.findByEmail(email);
         if (user == null || !passwordEncoder.matches(rawPassword, user.getPassword())) {
             throw new InvalidCredentialsException("Invalid email or password");
         }
-        return JwtUtil.generateToken(user.getUserId(), user.getRole());
+
+        ResponseCookie cookie = JwtUtil.generateCookie(user.getUserId(), user.getRole());
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .build();
     }
 
     public DiskSpaceDto findDiskUsage() {

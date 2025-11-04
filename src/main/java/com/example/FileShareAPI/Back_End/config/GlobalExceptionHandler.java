@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 
+import java.io.FileNotFoundException;
 import java.nio.file.NoSuchFileException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -56,6 +57,14 @@ public class GlobalExceptionHandler {
         return createErrorResponseEntity(
                 HttpStatus.NOT_FOUND,
                 "No such file!");
+    }
+
+    @ExceptionHandler(FileNotFoundException.class)
+    public ResponseEntity<?> fineNotFoundException(NoSuchFileException e, WebRequest req) {
+        return createErrorResponseEntity(
+                HttpStatus.NOT_FOUND,
+                "The system cannot find the path specified. | If you're running this locally, " +
+                        "then you most likely don't have the file stored.");
     }
 
     @ExceptionHandler(Exception.class)
